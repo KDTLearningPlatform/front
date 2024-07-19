@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Splash from './pages/splash/splash'; 
 import Home from './pages/home/home';
+import Login from './pages/login/login';
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -15,7 +16,7 @@ const App = () => {
 
   return (
     <div>
-      {showSplash ? <Splash /> : <Home />}
+      {showSplash ? <Splash /> : <Login />}
     </div>
   );
 };
