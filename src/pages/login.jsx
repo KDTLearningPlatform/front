@@ -1,6 +1,6 @@
 import React from 'react';
-import googleLogo from '../../assets/images/google.png';
-import naverLogo from '../../assets/images/naver.png';
+import googleLogo from '../assets/images/google.png';
+import naverLogo from '../assets/images/naver.png';
 
 const Login = () => {
   const styles = {
