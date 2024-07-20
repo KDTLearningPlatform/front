@@ -59,7 +59,7 @@ const MyCourses = () => {
 
 export default MyCourses;
 
-// Styled Components
+
 const Container = styled.div`
   padding: 16px;
   background-color: #f0f4f8;
