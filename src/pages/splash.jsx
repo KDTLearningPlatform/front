@@ -14,8 +14,8 @@ const Splash = () => {
       overflow: 'hidden'
     },
     logo: {
-      width: '150px',
-      height: '150px',
+      width: '300px',
+      height: '300px',
     },
     textContainer: {
       marginTop: '20px',
