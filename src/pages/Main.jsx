@@ -1,41 +1,132 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
+import TabBar from '../components/TabBar/TabBar';
 
 const Container = styled.div`
-  font-family: Arial, sans-serif;
-  margin: 20px;
+  padding: 16px;
+  background-color: #F5F9FF;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 `;
 
-const LectureContainer = styled.div`
-  max-width: 800px;
-  margin: auto;
+const Header = styled.div`
+  margin-bottom: 30px;
+`;
+
+const WelcomeText = styled.h1`
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 30px;
+  margin-left: 10px;
+`;
+
+const SubText = styled.p`
+  font-size: 14px;
+  color: #888;
+  margin-left: 10px;
+  margin-bottom: 50px;
+`;
+
+const SearchBar = styled.input`
+  width: calc(100% - 32px);
   padding: 20px;
+  margin: 0 auto 16px;
+  margin-left: 10px;
   border: 1px solid #ccc;
-  border-radius: 10px;
-  background-color: #f9f9f9;
+  border-radius: 25px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const LectureItem = styled.div`
-  border-bottom: 1px solid #ccc;
-  padding: 10px 0;
-  &:last-child {
-    border-bottom: none;
+const LectureHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  margin-left: 10px;
+`;
+
+const LectureTitle = styled.h2`
+  font-size: 20px;
+  margin-left: 10px;
+`;
+
+const CreateLectureButton = styled.button`
+  background-color: #0961F5;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 20px;
+
+  &:hover {
+    background-color: #074bbf;
   }
 `;
 
-const LectureTitle = styled.a`
-  font-size: 20px;
-  font-weight: bold;
+const LectureContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+`;
+
+const LectureItem = styled.div`
+  display: flex;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  padding: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+`;
+
+const LectureImage = styled.div`
+  width: 80px;
+  height: 80px;
+  background-color: #212121;
+  border-radius: 8px;
+  margin-right: 16px;
 `;
 
 const LectureDetails = styled.div`
-  margin-top: 5px;
+  flex: 1;
+`;
+
+const LectureItemTitle = styled.h3`
+  font-size: 18px;
+  margin: 0 0 8px 0;
+`;
+
+const LectureTag = styled.p`
+  margin: 0 0 8px 0;
+  color: #FF6B00;
+  font-weight: bold;
+`;
+
+const LectureCount = styled.p`
+  margin: 0;
+  color: #0961F5;
+  font-weight: bold;
 `;
 
 const Main = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState({});
   const [lectures, setLectures] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -60,34 +151,53 @@ const Main = () => {
     fetchLectures();
   }, []);
 
+  const handleProfileClick = () => {
+    navigate('/editProfile');
+  };
+
+  const handleCreateLecture = () => {
+    navigate('/createLecture');
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleLectureClick = (lectureId) => {
+    navigate(`/lectureDetails/${lectureId}`);
+  };
+
+  const filteredLectures = lectures.filter(
+    (lecture) =>
+      lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lecture.tag.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Container>
-      <h1>메인 페이지</h1>
-      <p>환영합니다, {userData.name}!</p>
-      <p>이메일: {userData.email}</p>
-      <p>목표 강의 수: {userData.goalVidCnt}</p>
-      <p>오늘 시청한 강의 수: {userData.dailyVidCnt}</p>
-      <form action="/auth/logout" method="post">
-        <button type="submit">로그아웃</button>
-      </form>
-      <form action="/auth/editProfile" method="get">
-        <button type="submit">프로필 편집</button>
-      </form>
-      <a href="/api/lectures/createLecture" className="button">강의/비디오 생성</a>
-
-      <h2>전체 강의 목록</h2>
+      <Header>
+        <WelcomeText>안녕하세요, {userData.name}님</WelcomeText>
+        <SubText>오늘은 무엇을 학습하고 싶으세요?</SubText>
+        <SearchBar placeholder="검색할 내용을 입력하세요" value={searchTerm} onChange={handleSearchChange} />
+      </Header>
+      <LectureHeader>
+        <LectureTitle>강의 목록</LectureTitle>
+        <CreateLectureButton onClick={handleCreateLecture}>강의 생성</CreateLectureButton>
+      </LectureHeader>
       <LectureContainer>
-        {lectures.map((lecture) => (
-          <LectureItem key={lecture.lectureId}>
-            <LectureTitle href={`/api/lectures/details/${lecture.lectureId}`}>{lecture.title}</LectureTitle>
+        {filteredLectures.map((lecture) => (
+          <LectureItem key={lecture.lectureId} onClick={() => handleLectureClick(lecture.lectureId)}>
+            <LectureImage />
             <LectureDetails>
-              <p>태그: {lecture.tag}</p>
-              <p>총 비디오 수: {lecture.totalVideoCount}</p>
-              <p>참석 수: {lecture.attendanceCount}</p>
+              <LectureTag>{lecture.tag}</LectureTag>
+              <LectureItemTitle>{lecture.title}</LectureItemTitle>
+              <LectureCount>{lecture.totalVideoCount} 비디오</LectureCount>
+              <LectureCount>{lecture.attendanceCount} 수강생</LectureCount>
             </LectureDetails>
           </LectureItem>
         ))}
       </LectureContainer>
+      <TabBar onProfileClick={handleProfileClick} />
     </Container>
   );
 };

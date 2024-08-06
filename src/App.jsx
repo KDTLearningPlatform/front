@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Splash from './pages/Splash';
@@ -9,6 +8,10 @@ import MyCourses from './pages/MyCourses';
 import CommunityPage from './pages/CommunityPage';
 import WritePostPage from './pages/WritePostPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
+import Profile from './pages/Profile';
+import CreateLecture from './pages/CreateLecture';
+import LectureDetails from './pages/LectureDetails';
+import EditLecture from './pages/EditLecture';
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -37,6 +40,10 @@ const App = () => {
           <Route path="/my-courses" element={<MyCourses />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/write-post" element={<WritePostPage />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/createLecture" element={<CreateLecture />} />
+          <Route path="/editLecture/:lectureId" element={<EditLecture />} />
+          <Route path="/lectureDetails/:lectureId" element={<LectureDetails />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

@@ -1,7 +1,9 @@
+import React from 'react';
+
 const navList = [
   {
     name: '홈',
-    path: '/home',
+    path: '/main',
     img: (
       <svg
         width="19"
@@ -27,7 +29,7 @@ const navList = [
   },
   {
     name: '내 코스들',
-    path: '/courses',
+    path: '/my-courses',
     img: (
       <svg
         width="18"

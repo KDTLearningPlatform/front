@@ -10,7 +10,7 @@ const OAuth2RedirectHandler = () => {
       try {
         const response = await axiosInstance.get('/auth/oauth2/redirect');
         if (response.data.status === 'ok') {
-          navigate('/profilecompletion');
+          navigate('/main');
         } else {
           navigate('/login');
         }
