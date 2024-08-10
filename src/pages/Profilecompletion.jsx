@@ -99,7 +99,7 @@ const CompleteButton = styled.button`
   }
 `;
 
-const ProfileCompletion = () => {
+const Profilecompletion = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -182,4 +182,4 @@ const ProfileCompletion = () => {
   );
 };
 
-export default ProfileCompletion;
+export default Profilecompletion;

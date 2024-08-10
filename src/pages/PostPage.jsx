@@ -1,136 +1,148 @@
+// WritePostPage.jsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 
 const Container = styled.div`
-    padding: 20px;
-    background-color: #F5F5F5;
-    height: 100vh;
+  padding: 20px;
+  background-color: #F5F5F5;
+  height: 100vh;
 `;
 
 const Header = styled.div`
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
 `;
 
 const BackButton = styled.button`
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
 `;
 
 const Title = styled.h1`
-    font-size: 20px;
-    font-weight: bold;
-    margin-left: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-left: 10px;
+`;
+
+const SearchContainer = styled.div`
+  margin-bottom: 20px;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
 `;
 
 const PostContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
 `;
 
 const Post = styled.div`
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 10px 0;
-    width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 10px 0;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const PostHeader = styled.div`
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 `;
 
 const Avatar = styled.div`
-    width: 40px;
-    height: 40px;
-    background-color: #000;
-    border-radius: 50%;
-    margin-right: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: #000;
+  border-radius: 50%;
+  margin-right: 10px;
 `;
 
 const PostContent = styled.div`
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 `;
 
 const PostTitle = styled.div`
-    font-weight: bold;
-    color: #FF6347; /* 색상 변경 */
+  font-weight: bold;
+  color: #FF6347; /* 색상 변경 */
 `;
 
 const PostText = styled.div`
-    color: #666666;
-    margin-top: 5px;
+  color: #666666;
+  margin-top: 5px;
 `;
 
 const TextAreaContainer = styled.div`
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 10px 0;
-    width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 10px 0;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const TitleInput = styled.input`
-    width: 100%;
-    padding: 10px;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    color: #666666;
-    margin-bottom: 10px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #666666;
+  margin-bottom: 10px;
 `;
 
 const TextArea = styled.textarea`
-    width: 100%;
-    height: 100px;
-    border: none;
-    outline: none;
-    resize: none;
-    font-size: 16px;
-    color: #666666;
-    padding: 10px;
-    box-sizing: border-box;
+  width: 100%;
+  height: 100px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 16px;
+  color: #666666;
+  padding: 10px;
+  box-sizing: border-box;
 `;
 
 const CharacterCount = styled.div`
-    text-align: right;
-    color: #999999;
-    margin-top: 5px;
+  text-align: right;
+  color: #999999;
+  margin-top: 5px;
 `;
 
 const SubmitButton = styled.button`
-    position: fixed;
-    bottom: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 25px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 
-    &:hover {
-        background-color: #0056b3;
-    }
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
 
 const ArrowIcon = styled(FiArrowRight)`
-    margin-left: 10px;
+  margin-left: 10px;
 `;
 
 const WritePostPage = () => {
@@ -153,16 +165,15 @@ const WritePostPage = () => {
     const handleSubmitClick = () => {
         const postData = {
             title,
-            field: content,
-            userId: 1 // 하드코딩된 사용자 ID
+            content,
         };
 
-        fetch('http://localhost:8080/api/studies', { // baseURL이 포함된 전체 URL로 수정
+        fetch('/api/studies', {
             method: 'POST',
+            body: JSON.stringify(postData),
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(postData),
         })
             .then(response => {
                 if (!response.ok) {
@@ -172,7 +183,7 @@ const WritePostPage = () => {
             })
             .then(data => {
                 console.log('Post created:', data);
-                navigate('/community'); // 모집글 작성 후 CommunityPage로 이동
+                navigate('/community');
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
@@ -187,6 +198,9 @@ const WritePostPage = () => {
                 </BackButton>
                 <Title>모집글 작성하기</Title>
             </Header>
+            <SearchContainer>
+                <SearchInput placeholder="강의 검색" />
+            </SearchContainer>
             <PostContainer>
                 <Post>
                     <PostHeader>
