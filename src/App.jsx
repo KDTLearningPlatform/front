@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import CreateLecture from './pages/CreateLecture';
 import LectureDetails from './pages/LectureDetails';
 import EditLecture from './pages/EditLecture';
+import PostPage from "./pages/PostPage";
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/editLecture/:lectureId" element={<EditLecture />} />
           <Route path="/lectureDetails/:lectureId" element={<LectureDetails />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/postpage" element={<PostPage />} />
         </Routes>
       </div>
     </Router>

@@ -29,6 +29,7 @@ const Post = styled.div`
     margin: 10px;
     width: 90%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer; /* 클릭 가능하도록 커서 변경 */
 `;
 
 const PostHeader = styled.div`
@@ -122,12 +123,16 @@ const CommunityPage = () => {
         navigate('/write-post');
     };
 
+    const handlePostClick = (studyId) => {
+        navigate(`/post/${studyId}`);
+    };
+
     return (
         <Container>
             <Header>모집글</Header>
             <PostContainer>
-                {posts.map(post => (
-                    <Post key={post.studyId}>
+                {posts.map((post, index) => (
+                    <Post key={index} onClick={() => handlePostClick(post.studyId || index)}>
                         <PostHeader>
                             <Avatar />
                             <PostContent>
