@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import TabBar from '../components/TabBar/TabBar';  // TabBar 컴포넌트 임포트
+import axiosInstance from '../api/axiosInstance'; // API 호출을 위한 커스텀 axios 인스턴스 임포트
 
 const Container = styled.div`
     padding: 20px;
@@ -150,34 +152,31 @@ const WritePostPage = () => {
         navigate(-1);
     };
 
-    const handleSubmitClick = () => {
+    const handleSubmitClick = async () => {
         const postData = {
             title,
             field: content,
-            userId: 1 // 하드코딩된 사용자 ID
         };
 
-        fetch('http://localhost:8080/api/studies', { // baseURL이 포함된 전체 URL로 수정
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(postData),
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Post created:', data);
-                navigate('/community'); // 모집글 작성 후 CommunityPage로 이동
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
+        try {
+            const response = await axiosInstance.post('/api/studies', postData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
+
+            // 응답 상태 코드가 201인지 확인
+            if (response.status !== 201) {
+                throw new Error('Network response was not ok');
+            }
+
+            console.log('Post created:', response.data);
+            navigate('/community'); // 모집글 작성 후 CommunityPage로 이동
+        } catch (error) {
+            console.error('There was a problem with the axios operation:', error);
+        }
     };
+
 
     return (
         <Container>
@@ -215,6 +214,7 @@ const WritePostPage = () => {
                 모집글 등록하기
                 <ArrowIcon />
             </SubmitButton>
+            <TabBar />
         </Container>
     );
 };
