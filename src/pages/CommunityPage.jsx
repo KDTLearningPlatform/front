@@ -6,8 +6,13 @@ import axiosInstance from '../api/axiosInstance'; // API 호출을 위한 커스
 
 // 페이지 전체 내용을 감싸는 메인 컨테이너에 대한 스타일드 컴포넌트
 const Container = styled.div`
-    padding-bottom: 80px; /* 하단에 TabBar 공간을 확보하기 위한 패딩 */
-    background-color: #F5F5F5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    height: 100vh;
+    background-color: #F5F9FF;
+    box-sizing: border-box;
 `;
 
 // 페이지 헤더 섹션에 대한 스타일드 컴포넌트
@@ -159,6 +164,11 @@ const CommunityPage = () => {
         navigate('/write-post');  // '/write-post' 경로로 이동
     };
 
+    // "모집글 등록하기" 버튼 클릭 시 호출되는 함수
+    const handlePostClick = (postId) => {
+        navigate(`/post/${postId}`);  // `/post/${postId}` 경로로 이동
+    }
+
     // 좋아요 버튼 클릭 시 호출되는 함수
     const handleLikeClick = async (postId) => {
         try {
@@ -182,7 +192,7 @@ const CommunityPage = () => {
             <PostContainer>
                 {/* posts 배열을 순회하며 각 게시글을 렌더링 */}
                 {posts.map(post => (
-                    <Post key={post.studyId}>  {/* 각 게시글의 고유 ID를 key로 사용 */}
+                    <Post key={post.studyId} onClick={() => handlePostClick(post.studyId)}>  {/* 각 게시글의 고유 ID를 key로 사용 */}
                         <PostHeader>
                             <Avatar />
                             <PostContent>
