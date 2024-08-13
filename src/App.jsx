@@ -7,6 +7,7 @@ import Main from './pages/Main';
 import MyCourses from './pages/MyCourses';
 import CommunityPage from './pages/CommunityPage';
 import WritePostPage from './pages/WritePostPage';
+import PostDetailPage from './pages/PostDetailPage'; // 새로 추가한 컴포넌트 import
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import Profile from './pages/Profile';
 import CreateLecture from './pages/CreateLecture';
@@ -40,6 +41,7 @@ const App = () => {
           <Route path="/my-courses" element={<MyCourses />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/write-post" element={<WritePostPage />} />
+          <Route path="/post/:studyId" element={<PostDetailPage />} /> {/* 새로 추가한 라우트 */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/createLecture" element={<CreateLecture />} />
           <Route path="/editLecture/:lectureId" element={<EditLecture />} />
