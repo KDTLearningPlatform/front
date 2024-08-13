@@ -46,7 +46,7 @@ const App = () => {
           <Route path="/editLecture/:lectureId" element={<EditLecture />} />
           <Route path="/lectureDetails/:lectureId" element={<LectureDetails />} />
           <Route path="*" element={<Navigate to="/" />} />
-          <Route path="/postpage" element={<PostPage />} />
+          <Route path="/post/:studyId" element={<PostPage />} />
         </Routes>
       </div>
     </Router>

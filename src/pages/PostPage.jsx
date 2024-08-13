@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiSend } from 'react-icons/fi';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FiArrowLeft, FiSend, FiEdit, FiTrash2 } from 'react-icons/fi';
 import axiosInstance from '../api/axiosInstance';
 
 const Container = styled.div`
     padding: 20px;
     background-color: #F5F5F5;
     height: 100vh;
+    overflow-y: auto;
 `;
 
 const Header = styled.div`
@@ -76,9 +77,16 @@ const CommentSection = styled.div`
     margin-top: 20px;
 `;
 
+const CommentContainer = styled.div`
+    margin-bottom: 20px;
+    padding-left: ${props => props.depth * 20}px;
+`;
+
 const Comment = styled.div`
     display: flex;
     align-items: center;
+    cursor: pointer;
+    margin-top: 10px;
     margin-bottom: 10px;
 `;
 
@@ -95,6 +103,27 @@ const CommentText = styled.div`
 const CommentTime = styled.div`
     color: #999999;
     font-size: 12px;
+`;
+
+const CommentActions = styled.div`
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+`;
+
+const EditButton = styled.button`
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #007BFF;
+    margin-right: 10px;
+`;
+
+const DeleteButton = styled.button`
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #FF6347;
 `;
 
 const CommentInputContainer = styled.div`
@@ -125,37 +154,39 @@ const CommentSendButton = styled.button`
 `;
 
 const PostPage = () => {
-    const [post, setPost] = useState({});
-    const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState('');
-    const navigate = useNavigate();
-    const studyId = 1; // 하드코딩된 studyId
+    const { studyId } = useParams(); // URL에서 studyId를 추출
+    const navigate = useNavigate(); // 페이지 이동을 위한 네비게이트 함수
+    const [post, setPost] = useState({}); // 게시물 상태
+    const [comments, setComments] = useState([]); // 댓글 목록 상태
+    const [newComment, setNewComment] = useState(''); // 새 댓글 내용 상태
+    const [parentCommentId, setParentCommentId] = useState(null); // 부모 댓글 ID 상태
+    const [editCommentId, setEditCommentId] = useState(null);
+    const [editCommentText, setEditCommentText] = useState('');
+
+    const userId = 1; // 사용자 ID를 하드코딩
 
     useEffect(() => {
         fetchPost(studyId);
         fetchComments(studyId);
     }, [studyId]);
 
-    const fetchPost = async (studyId) => {
+    const fetchPost = async (id) => {
         try {
-            const response = await axiosInstance.get(`/api/studies/${studyId}`);
+            const response = await axiosInstance.get(`/api/studies/${id}`);
             setPost(response.data);
         } catch (error) {
             console.error('Error fetching post:', error);
         }
     };
 
-    const fetchComments = async (studyId) => {
+    const fetchComments = async (id) => {
         try {
-            const response = await axiosInstance.get(`/api/studies/${studyId}/comments`);
+            const response = await axiosInstance.get(`/api/comments/study/${id}`);
+            console.log('Fetched comments:', response.data);
             setComments(response.data);
         } catch (error) {
             console.error('Error fetching comments:', error);
         }
-    };
-
-    const handleBackClick = () => {
-        navigate(-1);
     };
 
     const handleNewCommentChange = (e) => {
@@ -163,24 +194,115 @@ const PostPage = () => {
     };
 
     const handleCommentSubmit = async () => {
+        if (newComment.trim() === '') {
+            alert('댓글 내용을 입력하세요.');
+            return;
+        }
+
         try {
-            console.log('Submitting comment:', newComment);
-            const response = await axiosInstance.post(`/api/studies/${studyId}/comments`, {
+            const response = await axiosInstance.post(`/api/comments`, {
                 content: newComment,
-                userId: 1 // 하드코딩된 사용자 ID
+                userId: userId,
+                parentCommentId: parentCommentId,
+                studyId: studyId
             });
-            console.log('Comment response:', response.data);
-            setComments([...comments, response.data]);
+            await fetchComments(studyId);
             setNewComment('');
+            setParentCommentId(null);
         } catch (error) {
             console.error('Error submitting comment:', error);
+            alert('댓글 작성 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
+    };
+
+    const handleEditCommentChange = (e) => {
+        setEditCommentText(e.target.value);
+    };
+
+    const handleEditCommentSubmit = async (commentId) => {
+        if (editCommentText.trim() === '') {
+            alert('댓글 내용을 입력하세요.');
+            return;
+        }
+
+        try {
+            await axiosInstance.put(`/api/comments/${commentId}`, {
+                content: editCommentText,
+                userId: userId
+            });
+            await fetchComments(studyId);
+            setEditCommentId(null);
+            setEditCommentText('');
+        } catch (error) {
+            console.error('Error updating comment:', error);
+            alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        try {
+            await axiosInstance.delete(`/api/comments/${commentId}`);
+            await fetchComments(studyId);
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
+        }
+    };
+
+    const handleCommentClick = (commentId) => {
+        setParentCommentId(commentId);
+    };
+
+    const handleEditButtonClick = (commentId, commentText) => {
+        setEditCommentId(commentId);
+        setEditCommentText(commentText);
+    };
+
+    const renderComments = (commentList, parentId = null, depth = 0) => {
+        return commentList
+            .filter(comment => comment.parentCommentId === parentId)
+            .map(comment => (
+                <CommentContainer key={`${comment.commentId}-${depth}`} depth={depth}>
+                    <Comment onClick={() => handleCommentClick(comment.commentId)}>
+                        <Avatar />
+                        <CommentContent>
+                            {editCommentId === comment.commentId ? (
+                                <>
+                                    <CommentInput
+                                        value={editCommentText}
+                                        onChange={handleEditCommentChange}
+                                    />
+                                    <CommentSendButton onClick={() => handleEditCommentSubmit(comment.commentId)}>
+                                        <FiSend />
+                                    </CommentSendButton>
+                                </>
+                            ) : (
+                                <>
+                                    <CommentText>{comment.content}</CommentText>
+                                    <CommentTime>{new Date(comment.createDate).toLocaleDateString()}</CommentTime>
+                                </>
+                            )}
+                        </CommentContent>
+                        {editCommentId !== comment.commentId && (
+                            <CommentActions>
+                                <EditButton onClick={() => handleEditButtonClick(comment.commentId, comment.content)}>
+                                    <FiEdit />
+                                </EditButton>
+                                <DeleteButton onClick={() => handleDeleteComment(comment.commentId)}>
+                                    <FiTrash2 />
+                                </DeleteButton>
+                            </CommentActions>
+                        )}
+                    </Comment>
+                    {renderComments(commentList, comment.commentId, depth + 1)}
+                </CommentContainer>
+            ));
     };
 
     return (
         <Container>
             <Header>
-                <BackButton onClick={handleBackClick}>
+                <BackButton onClick={() => navigate(-1)}>
                     <FiArrowLeft />
                 </BackButton>
                 <Title>모집글 상세보기</Title>
@@ -198,20 +320,12 @@ const PostPage = () => {
             </PostContainer>
             <CommentSection>
                 <h2>댓글</h2>
-                {comments.map((comment, index) => (
-                    <Comment key={index}>
-                        <Avatar />
-                        <CommentContent>
-                            <CommentText>{comment.content}</CommentText>
-                            <CommentTime>{new Date(comment.createDate).toLocaleDateString()}</CommentTime>
-                        </CommentContent>
-                    </Comment>
-                ))}
+                {comments.length > 0 ? renderComments(comments) : <p>댓글이 없습니다.</p>}
             </CommentSection>
             <CommentInputContainer>
                 <Avatar />
                 <CommentInput
-                    placeholder="댓글을 작성하세요"
+                    placeholder={parentCommentId ? "대댓글을 작성하세요" : "댓글을 작성하세요"}
                     value={newComment}
                     onChange={handleNewCommentChange}
                 />

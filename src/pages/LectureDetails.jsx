@@ -262,8 +262,7 @@ const LectureDetails = () => {
       </Header>
       <TitleContainer>
         <LectureTag>{lectureDetails.tag}</LectureTag>
-        <TitleRow>
-          <LectureTitle>{lectureDetails.title}</LectureTitle>
+        <TitleRow>          <LectureTitle>{lectureDetails.title}</LectureTitle>
           {currentUserId === lectureDetails.userId && (
             <div>
               <ActionButton onClick={editLecture}>수정</ActionButton>

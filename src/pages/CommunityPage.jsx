@@ -131,8 +131,8 @@ const CommunityPage = () => {
         <Container>
             <Header>모집글</Header>
             <PostContainer>
-                {posts.map((post, index) => (
-                    <Post key={index} onClick={() => handlePostClick(post.studyId || index)}>
+                {posts.map((post) => (
+                    <Post key={post.studyId} onClick={() => handlePostClick(post.studyId)}>
                         <PostHeader>
                             <Avatar />
                             <PostContent>
