@@ -31,6 +31,7 @@ const BackButton = styled.img`
   width: 24px;
   height: 24px;
   margin-right: 16px;
+  filter: brightness(0) invert(1); /* 흰색으로 변경 */
 `;
 
 const TitleContainer = styled.div`
