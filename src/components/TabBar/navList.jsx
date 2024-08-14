@@ -28,7 +28,7 @@ const navList = [
     ),
   },
   {
-    name: '내 코스들',
+    name: '내 강의들',
     path: '/my-courses',
     img: (
       <svg
