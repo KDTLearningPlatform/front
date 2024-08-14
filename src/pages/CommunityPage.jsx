@@ -146,7 +146,8 @@ const CommunityPage = () => {
     };
 
     // 좋아요 버튼 클릭 시 호출되는 함수
-    const handleLikeClick = async (postId) => {
+    const handleLikeClick = async (postId, event) => {
+        event.stopPropagation(); // 클릭 이벤트 전파 중지
         try {
             const response = await axiosInstance.post(`/api/loves/${postId}`);  // 좋아요 상태 토글 API 호출
             if (response.status === 200) {
@@ -181,7 +182,7 @@ const CommunityPage = () => {
                             {/* 하트 아이콘 추가 */}
                             <HeartIcon
                                 liked={post.liked} // API 응답에서의 liked 상태 사용
-                                onClick={() => handleLikeClick(post.studyId)} // 클릭 시 좋아요 상태 토글
+                                onClick={(event) => handleLikeClick(post.studyId, event)}
                             >
                                 {post.liked ? '❤️' : '♡'} {/* liked 상태에 따라 하트 아이콘 변경 */}
                             </HeartIcon>
