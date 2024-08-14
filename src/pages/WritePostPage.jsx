@@ -1,252 +1,300 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiArrowRight, FiUpload } from 'react-icons/fi';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 
 const Container = styled.div`
-  padding: 20px;
-  background-color: #F5F5F5;
-  height: 100vh;
+    padding: 20px;
+    background-color: #F5F5F5;
+    height: 100vh;
 `;
 
 const Header = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
 `;
 
 const BackButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
-  font-weight: bold;
-  margin-left: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 10px;
 `;
 
 const PostContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
 `;
 
 const Post = styled.div`
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 10px 0;
-  width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const PostHeader = styled.div`
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 `;
 
 const Avatar = styled.div`
-  width: 40px;
-  height: 40px;
-  background-color: #000;
-  border-radius: 50%;
-  margin-right: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #000;
+    border-radius: 50%;
+    margin-right: 10px;
 `;
 
 const PostContent = styled.div`
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 `;
 
 const PostTitle = styled.div`
-  font-weight: bold;
-  color: #FF6347; /* 색상 변경 */
+    font-weight: bold;
+    color: #FF6347;
 `;
 
 const PostText = styled.div`
-  color: #666666;
-  margin-top: 5px;
-`;
-
-const UploadContainer = styled.div`
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 10px 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const UploadIcon = styled(FiUpload)`
-  font-size: 24px;
-  color: #167F71;
-  margin-bottom: 10px;
-`;
-
-const UploadText = styled.div`
-  color: #167F71;
+    color: #666666;
+    margin-top: 5px;
 `;
 
 const TextAreaContainer = styled.div`
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 10px 0;
-  width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const TitleInput = styled.input`
+    width: 100%;
+    padding: 10px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #666666;
+    margin-bottom: 10px;
 `;
 
 const TextArea = styled.textarea`
-  width: 100%;
-  height: 100px;
-  border: none;
-  outline: none;
-  resize: none;
-  font-size: 16px;
-  color: #666666;
-  padding: 10px;
-  box-sizing: border-box;
+    width: 100%;
+    height: 100px;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 16px;
+    color: #666666;
+    padding: 10px;
+    box-sizing: border-box;
 `;
 
 const CharacterCount = styled.div`
-  text-align: right;
-  color: #999999;
-  margin-top: 5px;
+    text-align: right;
+    color: #999999;
+    margin-top: 5px;
 `;
 
 const SubmitButton = styled.button`
-  position: fixed;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #007BFF;
-  color: #fff;
-  border: none;
-  border-radius: 25px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
 
-  &:hover {
-    background-color: #0056b3;
-  }
+    &:hover {
+        background-color: #0056b3;
+    }
 `;
 
 const ArrowIcon = styled(FiArrowRight)`
-  margin-left: 10px;
-`;
-
-const FileInput = styled.input`
-  display: none;
+    margin-left: 10px;
 `;
 
 const WritePostPage = () => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [file, setFile] = useState(null);
-  const navigate = useNavigate();
+    const { lectureId } = useParams(); // URL 파라미터에서 lectureId를 가져옵니다.
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [lecture, setLecture] = useState(null); // 강의 정보를 저장할 상태
+    const [userId, setUserId] = useState(null); // 사용자 ID를 저장할 상태
+    const navigate = useNavigate();
 
-  const handleTitleChange = (e) => {
-    setTitle(e.target.value);
-  };
+    useEffect(() => {
+        const fetchLecture = async () => {
+            try {
+                console.log(`Fetching lecture with ID: ${lectureId}`);
+                const response = await fetch(`/api/lectures/${lectureId}`);
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.indexOf('application/json') !== -1) {
+                    const data = await response.json();
+                    console.log('Fetched lecture data:', data);
+                    setLecture(data);
+                } else {
+                    throw new Error('Response is not JSON');
+                }
+            } catch (error) {
+                console.error('Error fetching lecture:', error);
+            }
+        };
 
-  const handleContentChange = (e) => {
-    setContent(e.target.value);
-  };
+        const fetchUserId = async () => {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                if (!token) {
+                    throw new Error('No JWT token found');
+                }
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+                const response = await fetch('/api/auth/session-info', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-  const handleUploadClick = () => {
-    document.getElementById('fileInput').click();
-  };
+                console.log('Response status (user ID):', response.status);
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // JWT 토큰이 유효하지 않거나 만료된 경우 로그인 페이지로 리디렉션
+                        navigate('/login');
+                    }
+                    throw new Error('Network response was not ok');
+                }
 
-  const handleBackClick = () => {
-    navigate(-1);
-  };
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.indexOf('application/json') !== -1) {
+                    const data = await response.json();
+                    console.log('Fetched user data:', data);
+                    setUserId(data.userId);
+                } else {
+                    throw new Error('Response is not JSON');
+                }
+            } catch (error) {
+                console.error('Error fetching user ID:', error);
+                // navigate('/login'); // 에러 발생 시 로그인 페이지로 리디렉션
+            }
+        };
 
-  const handleSubmitClick = () => {
-    const postData = new FormData();
-    postData.append('title', title);
-    postData.append('field', content);
-    postData.append('userId', 1);
-    if (file) {
-      postData.append('file', file);
-    }
+        fetchLecture();
+        fetchUserId();
+    }, [lectureId, navigate]);
 
-    fetch('/api/posts', {
-      method: 'POST',
-      body: postData,
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+    const handleTitleChange = (e) => {
+        setTitle(e.target.value);
+    };
+
+    const handleContentChange = (e) => {
+        setContent(e.target.value);
+    };
+
+    const handleBackClick = () => {
+        navigate(-1);
+    };
+
+    const handleSubmitClick = () => {
+        if (!userId) {
+            console.error('No user ID found, unable to submit post');
+            return;
         }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Post created:', data);
-        navigate('/community');
-      })
-      .catch(error => {
-        console.error('There was a problem with the fetch operation:', error);
-      });
-  };
 
-  return (
-    <Container>
-      <Header>
-        <BackButton onClick={handleBackClick}>
-          <FiArrowLeft />
-        </BackButton>
-        <Title>모집글 작성하기</Title>
-      </Header>
-      <PostContainer>
-        <Post>
-          <PostHeader>
-            <Avatar />
-            <PostContent>
-              <PostTitle>그래픽 디자인</PostTitle>
-              <PostText>그래픽 디자인 환경 세팅</PostText>
-            </PostContent>
-          </PostHeader>
-        </Post>
-      </PostContainer>
-      <UploadContainer onClick={handleUploadClick}>
-        <UploadIcon />
-        <UploadText>업로드하세요</UploadText>
-      </UploadContainer>
-      <FileInput
-        id="fileInput"
-        type="file"
-        onChange={handleFileChange}
-      />
-      <TextAreaContainer>
-        <TextArea
-          placeholder="내용을 작성하세요"
-          value={content}
-          onChange={handleContentChange}
-        />
-        <CharacterCount>*{250 - content.length} 글자 남음</CharacterCount>
-      </TextAreaContainer>
-      <SubmitButton onClick={handleSubmitClick}>
-        모집글 등록하기
-        <ArrowIcon />
-      </SubmitButton>
-    </Container>
-  );
+        const postData = {
+            title,
+            field: content,
+            userId: userId,
+            lectureId: lectureId // 강의 ID를 포함
+        };
+
+        const token = localStorage.getItem('jwtToken'); // 로컬 스토리지에서 JWT 토큰 가져오기
+
+        fetch('/api/studies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // 인증 헤더에 JWT 토큰 추가
+            },
+            body: JSON.stringify(postData),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+    .then(data => {
+            console.log('Post created:', data);
+            navigate('/community'); // 모집글 작성 후 CommunityPage로 이동
+        })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    };
+
+    return (
+        <Container>
+            <Header>
+                <BackButton onClick={handleBackClick}>
+                    <FiArrowLeft />
+                </BackButton>
+                <Title>모집글 작성하기</Title>
+            </Header>
+            {lecture && (
+                <PostContainer>
+                    <Post>
+                        <PostHeader>
+                            <Avatar />
+                            <PostContent>
+                                <PostTitle>{lecture.title}</PostTitle>
+                                <PostText>{lecture.description}</PostText>
+                            </PostContent>
+                        </PostHeader>
+                    </Post>
+                </PostContainer>
+            )}
+            <TextAreaContainer>
+                <TitleInput
+                    placeholder="제목을 작성하세요"
+                    value={title}
+                    onChange={handleTitleChange}
+                />
+                <TextArea
+                    placeholder="내용을 작성하세요"
+                    value={content}
+                    onChange={handleContentChange}
+                />
+                <CharacterCount>*{250 - content.length} 글자 남음</CharacterCount>
+            </TextAreaContainer>
+            <SubmitButton onClick={handleSubmitClick}>
+                모집글 등록하기
+                <ArrowIcon />
+            </SubmitButton>
+        </Container>
+    );
 };
 
 export default WritePostPage;

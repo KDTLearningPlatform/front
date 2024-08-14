@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Splash from './pages/Splash';
 import Login from './pages/Login';
-import ProfileCompletion from './pages/ProfileCompletion';
+import Profilecompletion from './pages/Profilecompletion';
 import Main from './pages/Main';
 import MyCourses from './pages/MyCourses';
 import CommunityPage from './pages/CommunityPage';
@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import CreateLecture from './pages/CreateLecture';
 import LectureDetails from './pages/LectureDetails';
 import EditLecture from './pages/EditLecture';
+import PostPage from "./pages/PostPage";
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -35,7 +36,7 @@ const App = () => {
           )}
           <Route path="/login" element={<Login />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
-          <Route path="/profilecompletion" element={<ProfileCompletion />} />
+          <Route path="/profilecompletion" element={<Profilecompletion />} />
           <Route path="/main" element={<Main />} />
           <Route path="/my-courses" element={<MyCourses />} />
           <Route path="/community" element={<CommunityPage />} />
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/editLecture/:lectureId" element={<EditLecture />} />
           <Route path="/lectureDetails/:lectureId" element={<LectureDetails />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/post/:studyId" element={<PostPage />} />
         </Routes>
       </div>
     </Router>
