@@ -209,6 +209,7 @@ const LectureDetails = () => {
   const navigate = useNavigate();
   const [lectureDetails, setLectureDetails] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isRegistered, setIsRegistered] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
@@ -220,9 +221,19 @@ const LectureDetails = () => {
         } else {
           setLectureDetails(response.data.lectureDetails);
           setCurrentUserId(response.data.currentUserId);
+          checkIfRegistered();
         }
       } catch (error) {
         console.error('Error fetching lecture details:', error);
+      }
+    };
+
+    const checkIfRegistered = async () => {
+      try {
+        const response = await axiosInstance.get(`/api/lectureProgress/is-registered/${lectureId}`);
+        setIsRegistered(response.data);
+      } catch (error) {
+        console.error('Error checking registration status:', error);
       }
     };
 
@@ -249,6 +260,32 @@ const LectureDetails = () => {
 
   const playVideo = (videoUrl) => {
     window.open(videoUrl, '_blank');
+  };
+
+  const handleLectureAction = async () => {
+    try {
+      if (isRegistered) {
+        await axiosInstance.delete(`/api/lectureProgress/unregister/${lectureId}`);
+        alert('강의 등록 삭제되었습니다.');
+        setIsRegistered(false);
+      } else {
+        const response = await axiosInstance.post('/api/lectureProgress/register', {
+          userId: currentUserId,
+          lectureId: lectureId
+        });
+        
+        if (response.status === 200) {
+          alert('강의가 성공적으로 등록되었습니다.');
+          setIsRegistered(true);
+        } else {
+          throw new Error('강의 등록 중 오류가 발생했습니다.');
+        }
+      }
+      navigate('/my-courses');
+    } catch (error) {
+      console.error('강의 처리 중 오류:', error);
+      alert('강의 처리 중 오류가 발생했습니다.');
+    }
   };
 
   if (!lectureDetails) {
@@ -319,7 +356,9 @@ const LectureDetails = () => {
           <span>지속적인 접근</span>
         </ExtraInfo>
       </ExtraInfoContainer>
-      <ActionButtonMain>강의 등록</ActionButtonMain>
+      <ActionButtonMain onClick={handleLectureAction}>
+        {isRegistered ? '강의 등록 삭제' : '강의 등록'}
+      </ActionButtonMain>
       <TabBar />
     </Container>
   );

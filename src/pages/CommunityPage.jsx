@@ -35,6 +35,7 @@ const Post = styled.div`
 const PostHeader = styled.div`
     display: flex;
     align-items: center;
+    width: 100%;  // PostHeader의 너비를 100%로 설정하여 하트 아이콘 정렬
 `;
 
 const Avatar = styled.div`
@@ -48,6 +49,7 @@ const Avatar = styled.div`
 const PostContent = styled.div`
     display: flex;
     flex-direction: column;
+    flex-grow: 1;  // 남은 공간을 차지하게 설정
 `;
 
 const PostTitle = styled.div`
@@ -101,6 +103,26 @@ const ArrowIcon = styled.div`
     align-items: center;
 `;
 
+// 하트 아이콘에 대한 스타일드 컴포넌트
+const HeartIcon = styled.div`
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    margin-left: auto; /* 오른쪽 끝으로 위치 조정 */
+    font-size: 24px; /* 아이콘 크기 설정 */
+    line-height: 1; /* 텍스트의 줄 높이 조정 */
+    display: flex; /* flexbox를 사용하여 정렬 */
+    justify-content: center; /* 가운데 정렬 */
+    align-items: center; /* 가운데 정렬 */
+    color: ${({ liked }) => (liked ? 'red' : '#666')}; /* 상태에 따라 색상 변경 */
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: red; /* 마우스 오버 시 색상 변경 */
+    }
+`;
+
+// CommunityPage 컴포넌트 정의
 const CommunityPage = () => {
     const [posts, setPosts] = useState([]);
     const navigate = useNavigate();
@@ -120,7 +142,24 @@ const CommunityPage = () => {
     }, []);
 
     const handleWritePostClick = () => {
-        navigate('/write-post');
+        navigate('/write-post');  // '/write-post' 경로로 이동
+    };
+
+    // 좋아요 버튼 클릭 시 호출되는 함수
+    const handleLikeClick = async (postId) => {
+        try {
+            const response = await axiosInstance.post(`/api/loves/${postId}`);  // 좋아요 상태 토글 API 호출
+            if (response.status === 200) {
+                // 성공적으로 좋아요 상태가 변경된 경우, 게시글 목록을 새로고침
+                const updatedPosts = posts.map(post =>
+                    post.studyId === postId ? { ...post, liked: !post.liked } : post
+                );
+                setPosts(updatedPosts);
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);  // 에러 발생 시 콘솔에 로그
+            alert('좋아요 상태 변경 중 오류가 발생했습니다.');  // 사용자에게 오류 알림
+        }
     };
 
     const handlePostClick = (studyId) => {
@@ -139,6 +178,13 @@ const CommunityPage = () => {
                                 <PostTitle>{post.title || '제목 없음'}</PostTitle>
                                 <PostText>{post.field}</PostText>
                             </PostContent>
+                            {/* 하트 아이콘 추가 */}
+                            <HeartIcon
+                                liked={post.liked} // API 응답에서의 liked 상태 사용
+                                onClick={() => handleLikeClick(post.studyId)} // 클릭 시 좋아요 상태 토글
+                            >
+                                {post.liked ? '❤️' : '♡'} {/* liked 상태에 따라 하트 아이콘 변경 */}
+                            </HeartIcon>
                         </PostHeader>
                         <PostFooter>
                             <FooterItem>댓글 {post.commentCount}</FooterItem>

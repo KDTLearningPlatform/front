@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import TabBar from '../components/TabBar/TabBar';  // TabBar 컴포넌트 임포트
+import axiosInstance from '../api/axiosInstance'; // API 호출을 위한 커스텀 axios 인스턴스 임포트
 
 const Container = styled.div`
     padding: 20px;
@@ -64,7 +66,7 @@ const PostContent = styled.div`
 
 const PostTitle = styled.div`
     font-weight: bold;
-    color: #FF6347;
+    color: #FF6347; /* 색상 변경 */
 `;
 
 const PostText = styled.div`

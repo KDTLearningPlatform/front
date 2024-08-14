@@ -1,57 +1,185 @@
-import React from 'react';
-import TabBar from '../components/TabBar/TabBar';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
+import TabBar from '../components/TabBar/TabBar';
+
+const Container = styled.div`
+  padding: 16px;
+  background-color: #F5F9FF;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Header = styled.div`
+  margin-bottom: 30px;
+`;
+
+const Title = styled.h1`
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  margin-left: 10px;
+`;
+
+const SearchBar = styled.input`
+  width: calc(100% - 32px);
+  padding: 20px;
+  margin: 0 auto 16px;
+  margin-left: 10px;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const FilterButtons = styled.div`
+  display: flex;
+  margin-bottom: 30px;
+  margin-left: 10px;
+  margin-right: 10px;
+  height: 50px;
+`;
+
+const FilterButton = styled.button`
+  flex: 1;
+  background-color: ${props => (props.isActive ? '#2F9D7E' : '#E1E7F5')};
+  color: ${props => (props.isActive ? 'white' : '#000000')};
+  padding: 10px 0;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 10px;
+
+  &:hover {
+    background-color: ${props => (props.isActive ? '#2B8A6B' : '#cbd5e0')};
+  }
+
+  &:last-child {
+    margin-right: 0;
+  }
+`;
+
+const LectureContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+`;
+
+const LectureItem = styled.div`
+  display: flex;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  padding: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+`;
+
+const LectureImage = styled.div`
+  width: 80px;
+  height: 80px;
+  background-color: #212121;
+  border-radius: 8px;
+  margin-right: 16px;
+`;
+
+const LectureDetails = styled.div`
+  flex: 1;
+`;
+
+const LectureTag = styled.p`
+  margin: 0 0 8px 0;
+  color: #FF6B00;
+  font-weight: bold;
+`;
+
+const LectureItemTitle = styled.h3`
+  font-size: 18px;
+  margin: 0 0 8px 0;
+`;
+
+const LectureTime = styled.p`
+  margin: 0;
+  color: #888;
+`;
 
 const MyCourses = () => {
+  const navigate = useNavigate();
+  const [lectures, setLectures] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState('progress');
+
+  useEffect(() => {
+    fetchLectures();
+  }, [filter]);
+
+  const fetchLectures = async () => {
+    try {
+      const endpoint = filter === 'completed' ? '/api/lectureProgress/completed' : '/api/lectureProgress/in-progress';
+      const response = await axiosInstance.get(endpoint);
+      console.log('Fetched lectures:', response.data); // 콘솔에 데이터 출력
+      setLectures(response.data);
+    } catch (error) {
+      console.error('Error fetching lectures:', error);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleLectureClick = (lectureId) => {
+    navigate(`/lectureDetails/${lectureId}`);
+  };
+
+  const filteredLectures = lectures.filter(
+    (lecture) =>
+      lecture.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lecture.tag?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Container>
       <Header>
-        <BackButton>&larr;</BackButton>
         <Title>나의 강의들</Title>
+        <SearchBar placeholder="검색할 내용을 입력하세요" value={searchTerm} onChange={handleSearchChange} />
       </Header>
-      <SearchBar>
-        <input type="text" placeholder="검색할 내용을 입력하세요" />
-        <button>
-          <SearchIcon />
-        </button>
-      </SearchBar>
-      <Tabs>
-        <Tab>완료</Tab>
-        <Tab active>진행중</Tab>
-      </Tabs>
-      <CourseList>
-        <CourseCard>
-          <CourseImage />
-          <CourseInfo>
-            <CompletionIcon />
-          </CourseInfo>
-        </CourseCard>
-        <CourseCard>
-          <CourseImage />
-          <CourseInfo>
-            <CompletionIcon />
-          </CourseInfo>
-        </CourseCard>
-        <CourseCard>
-          <CourseImage />
-          <CourseInfo>
-            <CompletionIcon />
-          </CourseInfo>
-        </CourseCard>
-        <CourseCard>
-          <CourseImage />
-          <CourseInfo>
-            <CompletionIcon />
-          </CourseInfo>
-        </CourseCard>
-        <CourseCard>
-          <CourseImage />
-          <CourseInfo>
-            <CompletionIcon />
-          </CourseInfo>
-        </CourseCard>
-        {/* 필요한 만큼 CourseCard를 복제 */}
-      </CourseList>
+      <FilterButtons>
+        <FilterButton isActive={filter === 'completed'} onClick={() => setFilter('completed')}>
+          완료
+        </FilterButton>
+        <FilterButton isActive={filter === 'progress'} onClick={() => setFilter('progress')}>
+          진행중
+        </FilterButton>
+      </FilterButtons>
+      <LectureContainer>
+        {filteredLectures.length > 0 ? (
+          filteredLectures.map((lecture) => (
+            <LectureItem key={lecture.lectureId} onClick={() => handleLectureClick(lecture.lectureId)}>
+              <LectureImage />
+              <LectureDetails>
+                <LectureTag>{lecture.tag}</LectureTag>
+                <LectureItemTitle>{lecture.title}</LectureItemTitle>
+                <LectureTime>{formatRunningTime(lecture.totalRunningTime)}</LectureTime>
+              </LectureDetails>
+            </LectureItem>
+          ))
+        ) : (
+          <p></p>
+        )}
+      </LectureContainer>
       <TabBar />
     </Container>
   );
@@ -59,124 +187,16 @@ const MyCourses = () => {
 
 export default MyCourses;
 
+const formatRunningTime = (totalRunningTime) => {
+  const hours = Math.floor(totalRunningTime / 3600);
+  const minutes = Math.floor((totalRunningTime % 3600) / 60);
+  const seconds = totalRunningTime % 60;
 
-const Container = styled.div`
-  padding: 16px;
-  background-color: #f0f4f8;
-  height: 100vh;
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const BackButton = styled.button`
-  font-size: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-`;
-
-const Title = styled.h1`
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
-  margin: 0;
-`;
-
-const SearchBar = styled.div`
-  display: flex;
-  margin-bottom: 16px;
-
-  input {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px 0 0 4px;
+  if (hours > 0) {
+    return `${hours}시간 ${minutes}분 ${seconds}초`;
+  } else if (minutes > 0) {
+    return `${minutes}분 ${seconds}초`;
+  } else {
+    return `${seconds}초`;
   }
-
-  button {
-    padding: 8px;
-    background-color: #007bff;
-    border: 1px solid #007bff;
-    border-radius: 0 4px 4px 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-`;
-
-const SearchIcon = styled.div`
-  width: 20px;
-  height: 20px;
-  background: url('../../assets/icons/search.svg') no-repeat center center;
-  background-size: cover;
-`;
-
-const Tabs = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 16px;
-`;
-
-const Tab = styled.button`
-  flex: 1;
-  padding: 10px 0;
-  background-color: ${props => (props.active ? '#167F71' : '#ccc')};
-  color: white;
-  border: none;
-  border-radius: 24px;
-  cursor: pointer;
-
-  &:not(:last-child) {
-    margin-right: 8px;
-  }
-`;
-
-const CourseList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const CourseCard = styled.div`
-  display: flex;
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const CourseImage = styled.div`
-  width: 100px;
-  height: 100px;
-  background-color: black;
-`;
-
-const CourseInfo = styled.div`
-  flex: 1;
-  padding: 16px;
-  position: relative;
-`;
-
-const CompletionIcon = styled.div`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 20px;
-  height: 20px;
-  background-color: #02b550;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &::after {
-    content: '✔';
-    color: white;
-    font-size: 12px;
-  }
-`;
+};
