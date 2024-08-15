@@ -46,7 +46,7 @@ const LectureList = styled.div`
 const LectureItem = styled.div`
   display: flex;
   align-items: center;
-  padding: 24px 0;  /* 높이 조정 */
+  padding: 24px 0;
   border-bottom: 1px solid #E0E0E0;
 
   &:last-child {
@@ -160,8 +160,28 @@ const MyLectureDetails = () => {
     return <Container>Loading...</Container>;
   }
 
-  const handleContinueCourse = () => {
-    navigate(`/lectureDetails/${lectureId}`);
+  const handleContinueCourse = async () => {
+    if (lectureDetails.lectureProgress === 1.0) {
+      try {
+        // 강의 등록을 먼저 삭제합니다.
+        await axiosInstance.delete(`/api/lectureProgress/unregister/${lectureId}`);
+
+        // 강의를 다시 등록합니다.
+        await axiosInstance.post(`/api/lectureProgress/register`, { lectureId });
+
+        navigate(`/my-courses`);
+      } catch (error) {
+        console.error('Error restarting lecture:', error);
+      }
+    } else {
+      try {
+        // 강의 등록 삭제를 위한 API 호출
+        await axiosInstance.delete(`/api/lectureProgress/unregister/${lectureId}`);
+        navigate('/my-courses', { state: { filter: location.state?.filter || 'progress' } });
+      } catch (error) {
+        console.error('Error unregistering lecture:', error);
+      }
+    }
   };
 
   const handleBackClick = () => {
@@ -172,7 +192,6 @@ const MyLectureDetails = () => {
     navigate(`/video/${video.videoId}`);
   };
 
-  // 완료된 비디오 수를 계산
   const completedVideosCount = lectureDetails.videos.filter(video => video.progress === 1).length;
 
   return (
@@ -209,7 +228,7 @@ const MyLectureDetails = () => {
       </LectureList>
       <ButtonContainer>
         <ActionButton onClick={handleContinueCourse}>
-          강의 계속 수강
+          {lectureDetails.lectureProgress === 1.0 ? '강의 다시 시작' : '강의 등록 삭제'}
         </ActionButton>
       </ButtonContainer>
       <TabBar />
