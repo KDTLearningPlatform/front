@@ -130,7 +130,7 @@ const CommentHeader = styled.div`
 
 const CommentContainer = styled.div`
     margin-bottom: 20px;
-    padding-left: ${props => props.depth * 20}px;
+    padding-left: ${props => props.depth * 50}px;    // depth로 띄어쓰기
 `;
 
 const Comment = styled.div`
@@ -320,7 +320,7 @@ const PostPage = () => {
         try {
             const response = await axiosInstance.post(`/api/comments?studyId=${studyId}`, {
                 content: newComment,
-                parentCommentId: parentCommentId || null, // 부모 댓글 ID 추가
+                parentId: parentCommentId || null, // 부모 댓글 ID 추가
             });
 
             if (response.status === 201) {
@@ -373,6 +373,7 @@ const PostPage = () => {
     // 댓글 클릭 시 호출되는 함수 (대댓글 작성 시 부모 ID 설정)
     const handleReplyClick = (commentId) => {
         setParentCommentId(commentId); // 부모 댓글 ID 설정
+        console.log('Clicked comment ID:', commentId); // 클릭한 댓글 ID 출력
         setNewComment(''); // 새 댓글 내용 초기화
     };
 
@@ -400,7 +401,7 @@ const PostPage = () => {
 
         // 트리 구조 생성
         comments.forEach(comment => {
-            if (comment.ancestorCommentId === comment.commentId) {
+            if (comment.depth === 0) {
                 // 최상위 댓글
                 rootComments.push(commentMap[comment.commentId]);
             } else {
@@ -412,13 +413,16 @@ const PostPage = () => {
             }
         });
 
+        // 최상위 댓글 최신순으로 정렬
+        rootComments.sort((a, b) => new Date(b.createDate) - new Date(a.createDate));
+
         return rootComments;
     };
 
     // 댓글 렌더링 함수 (재귀적으로 자식 댓글을 렌더링)
-    const renderComments = (commentList, depth = 0) => {
+    const renderComments = (commentList) => {
         return commentList.map(comment => (
-            <CommentContainer key={comment.commentId} depth={depth}>
+            <CommentContainer key={comment.commentId} depth={comment.depth}>
                 <Comment onClick={() => handleReplyClick(comment.commentId)}>
                     <Avatar/>
                     <CommentContent>
@@ -450,7 +454,10 @@ const PostPage = () => {
                         </CommentActions>
                     )}
                 </Comment>
-                {comment.children && comment.children.length > 0 && renderComments(comment.children, depth + 1)}
+                {/* 자식 댓글 렌더링 (오래된 순으로 정렬) */}
+                {comment.children && comment.children.length > 0 && renderComments(
+                    comment.children.sort((a, b) => new Date(a.createDate) - new Date(b.createDate))
+                )}
             </CommentContainer>
         ));
     };
