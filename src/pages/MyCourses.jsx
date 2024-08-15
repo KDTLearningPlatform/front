@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
 import TabBar from '../components/TabBar/TabBar';
+import finishedIcon from '../assets/icons/finished.svg';
 
 const Container = styled.div`
   padding: 16px;
@@ -74,6 +75,7 @@ const LectureContainer = styled.div`
 
 const LectureItem = styled.div`
   display: flex;
+  position: relative;  /* 포지션 상대값 추가 */
   background-color: white;
   border-radius: 8px;
   overflow: hidden;
@@ -85,6 +87,14 @@ const LectureItem = styled.div`
   &:hover {
     background-color: #f0f0f0;
   }
+`;
+
+const FinishedIcon = styled.img`
+  position: absolute;  /* 아이콘을 오른쪽 위에 배치 */
+  top: 16px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
 `;
 
 const LectureImage = styled.div`
@@ -140,12 +150,14 @@ const ProgressBarFill = styled.div`
 
 const MyCourses = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [lectures, setLectures] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('progress');
-  const [progressValues, setProgressValues] = useState([]); // 새로 추가된 상태
+  const [filter, setFilter] = useState(location.state?.filter || 'progress');
+  const [progressValues, setProgressValues] = useState([]);
 
   useEffect(() => {
+    console.log("Current filter:", filter);
     fetchLectures();
   }, [filter]);
 
@@ -158,11 +170,10 @@ const MyCourses = () => {
       const initialProgressValues = response.data.map(() => 0);
       setProgressValues(initialProgressValues);
       
-      // 짧은 시간 후에 애니메이션을 트리거합니다.
       setTimeout(() => {
         const finalProgressValues = response.data.map(lecture => lecture.progress);
         setProgressValues(finalProgressValues);
-      }, 100); // 100ms 정도의 딜레이 후에 실제 진행 값을 설정합니다.
+      }, 100);
     } catch (error) {
       console.error('Error fetching lectures:', error);
     }
@@ -173,9 +184,10 @@ const MyCourses = () => {
   };
 
   const handleLectureClick = (lectureId) => {
-    navigate(`/lectureDetails/${lectureId}`);
+    console.log("Navigating with filter:", filter);
+    navigate(`/myLectureDetails/${lectureId}`, { state: { filter } });  // filter 상태를 전송
   };
-
+  
   const filteredLectures = lectures.filter(
     (lecture) =>
       lecture.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -216,6 +228,7 @@ const MyCourses = () => {
         {filteredLectures.length > 0 ? (
           filteredLectures.map((lecture, index) => (
             <LectureItem key={lecture.lectureId} onClick={() => handleLectureClick(lecture.lectureId)}>
+              {filter === 'completed' && <FinishedIcon src={finishedIcon} alt="완료 아이콘" />}
               <LectureImage />
               <LectureDetails>
                 <LectureTag>{lecture.tag}</LectureTag>

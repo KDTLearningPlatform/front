@@ -77,8 +77,9 @@ const Select = styled.select`
 `;
 
 const SaveButton = styled.button`
-  width: calc(100% - 40px);
+  width: calc(100% - 10px);
   padding: 15px;
+  border: none;
   background-color: #0961F5;
   color: white;
   font-size: 16px;
@@ -87,6 +88,24 @@ const SaveButton = styled.button`
   cursor: pointer;
   box-sizing: border-box;
   margin-top: 60px;
+
+  &:hover {
+    background-color: #074bbf;
+  }
+`;
+
+const LogoutButton = styled.button`
+  width: calc(100% - 10px);
+  padding: 15px;
+  border: none;
+  background-color: #0961F5;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 90px;
+  cursor: pointer;
+  box-sizing: border-box;
+  margin-top: 30px;
 
   &:hover {
     background-color: #074bbf;
@@ -185,7 +204,7 @@ const Profile = () => {
         <option value="3">3</option>
       </Select>
       <SaveButton onClick={handleSubmit}>저장</SaveButton>
-      <SaveButton onClick={handleLogout}>로그아웃</SaveButton>
+      <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
       <ToastContainer />
       <TabBar />
     </Container>

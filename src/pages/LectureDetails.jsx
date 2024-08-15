@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
 import TabBar from '../components/TabBar/TabBar';
+import Modal from 'react-modal';
 import backIcon from '../assets/images/back.png';
 import videoIcon from '../assets/icons/video.svg';
 import clockIcon from '../assets/icons/clock.svg';
 import extraVideoIcon from '../assets/icons/extra-video.svg';
 import extraMobileIcon from '../assets/icons/extra-mobile.svg';
 import extraConstantIcon from '../assets/icons/extra-constant.svg';
-import playIcon from '../assets/icons/play.svg';
+import lockIcon from '../assets/icons/lock.svg';
 
 const Container = styled.div`
   padding: 16px;
@@ -137,7 +138,7 @@ const VideoDetails = styled.div`
   flex: 1;
 `;
 
-const PlayButton = styled.img`
+const LockButton = styled.img`
   width: 24px;
   height: 24px;
   cursor: pointer;
@@ -204,6 +205,26 @@ const ActionButton = styled.button`
   }
 `;
 
+// 모달 스타일 정의
+const customModalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    padding: '20px',
+    borderRadius: '10px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    maxWidth: '300px',
+    textAlign: 'center',
+  },
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+};
+
 const LectureDetails = () => {
   const { lectureId } = useParams();
   const navigate = useNavigate();
@@ -211,6 +232,7 @@ const LectureDetails = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [modalIsOpen, setModalIsOpen] = useState(false); // 모달 상태 추가
 
   useEffect(() => {
     const fetchLectureDetails = async () => {
@@ -258,8 +280,13 @@ const LectureDetails = () => {
     }
   };
 
-  const playVideo = (videoUrl) => {
-    window.open(videoUrl, '_blank');
+  // 잠금 버튼을 클릭했을 때 모달을 열도록 설정
+  const handleLockClick = () => {
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
   };
 
   const handleLectureAction = async () => {
@@ -299,7 +326,8 @@ const LectureDetails = () => {
       </Header>
       <TitleContainer>
         <LectureTag>{lectureDetails.tag}</LectureTag>
-        <TitleRow>          <LectureTitle>{lectureDetails.title}</LectureTitle>
+        <TitleRow>
+          <LectureTitle>{lectureDetails.title}</LectureTitle>
           {currentUserId === lectureDetails.userId && (
             <div>
               <ActionButton onClick={editLecture}>수정</ActionButton>
@@ -335,7 +363,10 @@ const LectureDetails = () => {
                   <p style={{ fontWeight: 'bold' }}>{video.title}</p>
                   <p>{video.runningTime} 초</p>
                 </VideoDetails>
-                <PlayButton src={playIcon} alt="재생 아이콘" onClick={() => playVideo(video.content)} />
+                {/* 강의 등록이 안 돼있을 때만 lock 아이콘 표시 */}
+                {!isRegistered && (
+                  <LockButton src={lockIcon} alt="잠금 아이콘" onClick={handleLockClick} />
+                )}
               </VideoItem>
             ))}
           </Curriculum>
@@ -360,6 +391,18 @@ const LectureDetails = () => {
         {isRegistered ? '강의 등록 삭제' : '강의 등록'}
       </ActionButtonMain>
       <TabBar />
+
+      {/* 모달 컴포넌트 */}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={customModalStyles}
+        contentLabel="잠금 해제 알림"
+      >
+        <h2>안내</h2>
+        <p>강의를 등록해야만 비디오 시청이 가능합니다.</p>
+        <button onClick={closeModal}>확인</button>
+      </Modal>
     </Container>
   );
 };
