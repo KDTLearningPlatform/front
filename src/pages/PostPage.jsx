@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiSend, FiEdit, FiTrash2 } from 'react-icons/fi';
 import axiosInstance from '../api/axiosInstance';
+import TabBar from "../components/TabBar/TabBar";
 
 // 스타일드 컴포넌트 정의
 const Container = styled.div`
@@ -14,8 +15,10 @@ const Container = styled.div`
 
 const Header = styled.div`
     display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    width: 100%; // 전체 너비를 사용
 `;
 
 const BackButton = styled.button`
@@ -23,6 +26,12 @@ const BackButton = styled.button`
     border: none;
     cursor: pointer;
     font-size: 24px;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: auto; // 자동 마진으로 오른쪽 정렬
 `;
 
 const Title = styled.h1`
@@ -195,8 +204,25 @@ const CommentSendButton = styled.button`
     color: #007BFF;
 `;
 
+const ActionButton = styled.button`
+  padding: 8px 16px;
+  background-color: #0961f5;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 8px;
+
+  &:hover {
+    background-color: #074bbf;
+  }
+`;
+
 // PostPage 컴포넌트 정의
 const PostPage = () => {
+    const [currentUserId, setCurrentUserId] = useState(null);
     const {studyId} = useParams(); // URL에서 studyId를 추출
     const navigate = useNavigate(); // 페이지 이동을 위한 네비게이트 함수
     const [post, setPost] = useState({}); // 게시물 상태
@@ -206,6 +232,10 @@ const PostPage = () => {
     const [editCommentId, setEditCommentId] = useState(null); // 수정할 댓글 ID 상태
     const [editCommentText, setEditCommentText] = useState(''); // 수정할 댓글 내용 상태
 
+    const [isEditingPost, setIsEditingPost] = useState(false); // 수정 모드 상태
+    const [editPostTitle, setEditPostTitle] = useState(''); // 수정할 제목 상태
+    const [editPostContent, setEditPostContent] = useState(''); // 수정할 내용 상태
+
     useEffect(() => {
         fetchPost(studyId); // 게시물 데이터 가져오기
     }, [studyId]);
@@ -214,10 +244,49 @@ const PostPage = () => {
     const fetchPost = async (id) => {
         try {
             const response = await axiosInstance.get(`/api/studies/${id}`);
-            setPost(response.data); // 게시물 상태 업데이트
-            setComments(response.data.comments || []); // 댓글 목록 상태 업데이트
+            setPost(response.data.studyDetails); // 게시물 상태 업데이트
+            setCurrentUserId(response.data.currentUserId);
+            setComments(response.data.studyDetails.comments || []); // 댓글 목록 상태 업데이트
+            setEditPostTitle(response.data.studyDetails.title); // 제목 초기화
+            setEditPostContent(response.data.studyDetails.field); // 내용 초기화
         } catch (error) {
             console.error('Error fetching post:', error);
+        }
+    };
+
+    const handleEditPost = () => {
+        setIsEditingPost(true); // 수정 모드 활성화
+    };
+
+    const handleSavePost = async () => {
+        try {
+            const response = await axiosInstance.put(`/api/studies/${studyId}`, {
+                title: editPostTitle,
+                field: editPostContent,
+            });
+            if (response.status === 200) {
+                setIsEditingPost(false); // 수정 모드 비활성화
+                await fetchPost(studyId);
+            } else {
+                throw new Error('Failed to update post.');
+            }
+        } catch (error) {
+            console.error('Error saving post:', error);
+            alert('모집글 수정 중 오류가 발생했습니다.');
+        }
+    };
+
+    const deletePost= async () => {
+        try {
+            const response = await axiosInstance.delete(`/api/studies/${studyId}`);
+            if (response.status === 204) {
+                alert('강의가 삭제되었습니다.');
+                navigate('/main');
+            } else {
+                throw new Error('강의 삭제 중 오류가 발생했습니다.');
+            }
+        } catch (error) {
+            alert('강의 삭제 중 오류가 발생했습니다.');
         }
     };
 
@@ -391,15 +460,36 @@ const PostPage = () => {
         <Container>
             <Header>
                 <BackButton onClick={() => navigate(-1)}>
-                    <FiArrowLeft/>
+                    <FiArrowLeft />
                 </BackButton>
+
                 <Title>모집글 상세보기</Title>
+                    {post && currentUserId === post.userId && (
+                        <ButtonContainer>
+                            {isEditingPost ? (
+                                <ActionButton onClick={handleSavePost}>수정완료</ActionButton>
+                            ) : (
+                                <ActionButton onClick={handleEditPost}>수정</ActionButton>
+                            )}
+                            <ActionButton onClick={deletePost}>삭제</ActionButton>
+                        </ButtonContainer>
+                    )}
             </Header>
 
             <PostContainer>
                 <PostHeader>
                     <PostText>모집글</PostText>
-                    <PostTitle>{post.title}</PostTitle>
+                    {isEditingPost ? (
+                        <PostTitle>
+                            <input
+                                value={editPostTitle}
+                                onChange={(e) => setEditPostTitle(e.target.value)}
+                                style={{ width: '100%', border: 'none', outline: 'none' }}
+                            />
+                        </PostTitle>
+                    ) : (
+                        <PostTitle>{post.title}</PostTitle>
+                    )}
                     <HeartIcon
                         liked={post.liked}
                         onClick={(event) => handleLikeClick(post.studyId, event)}
@@ -409,7 +499,17 @@ const PostPage = () => {
                 </PostHeader>
 
                 <PostContent>
-                    <PostField>{post.field}</PostField>
+                    {isEditingPost ? (
+                        <PostField>
+                            <textarea
+                                value={editPostContent}
+                                onChange={(e) => setEditPostContent(e.target.value)}
+                                style={{ width: '100%', border: 'none', outline: 'none', resize: 'none' }}
+                            />
+                        </PostField>
+                    ) : (
+                        <PostField>{post.field}</PostField>
+                    )}
                 </PostContent>
             </PostContainer>
 
@@ -433,6 +533,7 @@ const PostPage = () => {
                     </DeleteButton>
                 )}
             </CommentInputContainer>
+            <TabBar />
         </Container>
     );
 };
