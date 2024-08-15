@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
@@ -9,7 +9,7 @@ const Container = styled.div`
   height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: none;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
@@ -53,6 +53,10 @@ const VideoPage = () => {
   const navigate = useNavigate();
   const [videoTitle, setVideoTitle] = useState('');
   const [videoContent, setVideoContent] = useState('');
+  const videoRef = useRef(null);
+  const [lastPlaybackPosition, setLastPlaybackPosition] = useState(0);
+  const [runningTime, setRunningTime] = useState(0); // 비디오 전체 길이 추가
+  const [progressSaved, setProgressSaved] = useState(false);
 
   useEffect(() => {
     const fetchVideoContent = async () => {
@@ -60,7 +64,9 @@ const VideoPage = () => {
         const response = await axiosInstance.get(`/api/videos/${videoId}`);
         const videoData = response.data;
         setVideoTitle(videoData.title);
-        setVideoContent(videoData.content); // S3 버킷에서 제공하는 URL
+        setVideoContent(videoData.content);
+        setLastPlaybackPosition(videoData.lastPlaybackPosition || 0);
+        setRunningTime(videoData.runningTime || 0); // 비디오 전체 길이 설정
       } catch (error) {
         console.error('Error fetching video content:', error);
       }
@@ -69,15 +75,82 @@ const VideoPage = () => {
     fetchVideoContent();
   }, [videoId]);
 
+  useEffect(() => {
+    const videoElement = videoRef.current;
+
+    const handleLoadedMetadata = () => {
+      if (videoElement) {
+        if (lastPlaybackPosition >= runningTime) {
+          videoElement.currentTime = 0; // 마지막 재생 위치가 비디오 길이와 같다면 처음부터 재생
+        } else {
+          videoElement.currentTime = lastPlaybackPosition;
+        }
+      }
+    };
+
+    if (videoElement) {
+      videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+
+    return () => {
+      if (videoElement) {
+        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      }
+    };
+  }, [lastPlaybackPosition, runningTime]);
+
+  const saveProgress = async () => {
+    if (videoRef.current && !progressSaved) {
+      const currentTime = videoRef.current.currentTime;
+      setProgressSaved(true);
+
+      try {
+        const response = await axiosInstance.post('/api/videos', {
+          videoId,
+          lastPlaybackPosition: Math.floor(currentTime),
+        });
+        console.log("Progress saved successfully:", response);
+      } catch (error) {
+        console.error('Error saving video progress:', error);
+      } finally {
+        setProgressSaved(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      saveProgress();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   return (
     <Container>
       <Header>
-        <BackButton src={backIcon} alt="뒤로가기" onClick={() => navigate(-1)} />
+        <BackButton
+          src={backIcon}
+          alt="뒤로가기"
+          onClick={() => {
+            saveProgress();
+            navigate(-1);
+          }}
+        />
         <Title>{videoTitle}</Title>
       </Header>
       <VideoContainer>
         {videoContent ? (
-          <VideoPlayer controls>
+          <VideoPlayer
+            ref={videoRef}
+            controls
+            onPause={saveProgress}
+          >
             <source src={videoContent} type="video/mp4" />
             Your browser does not support the video tag.
           </VideoPlayer>
