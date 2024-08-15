@@ -66,7 +66,7 @@ const VideoPage = () => {
         setVideoTitle(videoData.title);
         setVideoContent(videoData.content);
         setLastPlaybackPosition(videoData.lastPlaybackPosition || 0);
-        setRunningTime(videoData.runningTime || 0); // 비디오 전체 길이 설정
+        setRunningTime(videoData.runningTime || 0);
       } catch (error) {
         console.error('Error fetching video content:', error);
       }
@@ -118,6 +118,10 @@ const VideoPage = () => {
     }
   };
 
+  const handleBackClick = () => {
+    navigate(-1, { replace: true });
+  };
+
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       saveProgress();
@@ -139,7 +143,7 @@ const VideoPage = () => {
           alt="뒤로가기"
           onClick={() => {
             saveProgress();
-            navigate(-1);
+            handleBackClick();
           }}
         />
         <Title>{videoTitle}</Title>
