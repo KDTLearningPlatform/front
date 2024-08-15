@@ -115,11 +115,35 @@ const LectureTime = styled.p`
   color: #888;
 `;
 
+const ProgressContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+`;
+
+const ProgressBarBackground = styled.div`
+  background-color: #E0E0E0; /* 연회색 기본 틀 */
+  border-radius: 10px;
+  height: 10px; /* 바 높이 설정 */
+  width: 88%; /* 전체 넓이를 줄여서 오른쪽 공간 확보 */
+  position: relative;
+  overflow: hidden;
+`;
+
+const ProgressBarFill = styled.div`
+  background-color: ${props => props.color};
+  height: 100%;
+  width: ${props => props.progress * 100}%;
+  transition: width 1s ease-in-out; /* 애니메이션 추가 */
+`;
+
 const MyCourses = () => {
   const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('progress');
+  const [progressValues, setProgressValues] = useState([]); // 새로 추가된 상태
 
   useEffect(() => {
     fetchLectures();
@@ -131,6 +155,14 @@ const MyCourses = () => {
       const response = await axiosInstance.get(endpoint);
       console.log('Fetched lectures:', response.data); // 콘솔에 데이터 출력
       setLectures(response.data);
+      const initialProgressValues = response.data.map(() => 0);
+      setProgressValues(initialProgressValues);
+      
+      // 짧은 시간 후에 애니메이션을 트리거합니다.
+      setTimeout(() => {
+        const finalProgressValues = response.data.map(lecture => lecture.progress);
+        setProgressValues(finalProgressValues);
+      }, 100); // 100ms 정도의 딜레이 후에 실제 진행 값을 설정합니다.
     } catch (error) {
       console.error('Error fetching lectures:', error);
     }
@@ -150,6 +182,22 @@ const MyCourses = () => {
       lecture.tag?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getProgressColor = (progress) => {
+    if (progress === 0) return '#E0E0E0'; // 기본 연한 회색
+    if (progress < 0.25) return '#FFEB3B'; // 노랑
+    if (progress < 0.5) return '#FF9800'; // 주황
+    if (progress < 0.75) return '#4CAF50'; // 초록
+    return '#2196F3'; // 파랑
+  };
+
+  const renderProgressBar = (progress, index) => {
+    return (
+      <ProgressBarBackground>
+        <ProgressBarFill progress={progressValues[index]} color={getProgressColor(progress)} />
+      </ProgressBarBackground>
+    );
+  };
+
   return (
     <Container>
       <Header>
@@ -166,13 +214,19 @@ const MyCourses = () => {
       </FilterButtons>
       <LectureContainer>
         {filteredLectures.length > 0 ? (
-          filteredLectures.map((lecture) => (
+          filteredLectures.map((lecture, index) => (
             <LectureItem key={lecture.lectureId} onClick={() => handleLectureClick(lecture.lectureId)}>
               <LectureImage />
               <LectureDetails>
                 <LectureTag>{lecture.tag}</LectureTag>
                 <LectureItemTitle>{lecture.title}</LectureItemTitle>
                 <LectureTime>{formatRunningTime(lecture.totalRunningTime)}</LectureTime>
+                {filter === 'progress' && (
+                  <ProgressContainer>
+                    <div style={{ flex: 1 }}>{renderProgressBar(lecture.progress, index)}</div>
+                    <div style={{ marginLeft: '10px' }}>{`${lecture.watchedCount}/${lecture.totalVideoCount}`}</div>
+                  </ProgressContainer>
+                )}
               </LectureDetails>
             </LectureItem>
           ))
