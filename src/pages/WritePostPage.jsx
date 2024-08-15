@@ -30,49 +30,50 @@ const Title = styled.h1`
     margin-left: 10px;
 `;
 
-const PostContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-`;
+// const Avatar = styled.div`
+//     width: 40px;
+//     height: 40px;
+//     background-color: #000;
+//     border-radius: 50%;
+//     margin-right: 10px;
+// `;
 
-const Post = styled.div`
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 10px 0;
-    width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
 
-const PostHeader = styled.div`
-    display: flex;
-    align-items: center;
-`;
-
-const Avatar = styled.div`
-    width: 40px;
-    height: 40px;
-    background-color: #000;
-    border-radius: 50%;
-    margin-right: 10px;
-`;
-
-const PostContent = styled.div`
-    display: flex;
-    flex-direction: column;
-`;
-
-const PostTitle = styled.div`
-    font-weight: bold;
-    color: #FF6347; /* 색상 변경 */
-`;
-
-const PostText = styled.div`
-    color: #666666;
-    margin-top: 5px;
-`;
+// const PostContainer = styled.div`
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     margin-bottom: 20px;
+// `;
+//
+// const Post = styled.div`
+//     background-color: #ffffff;
+//     border-radius: 12px;
+//     padding: 20px;
+//     margin: 10px 0;
+//     width: 100%;
+//     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+// `;
+//
+// const PostHeader = styled.div`
+//     display: flex;
+//     align-items: center;
+// `;
+//
+// const PostContent = styled.div`
+//     display: flex;
+//     flex-direction: column;
+// `;
+//
+// const PostTitle = styled.div`
+//     font-weight: bold;
+//     color: #FF6347; /* 색상 변경 */
+// `;
+//
+// const PostText = styled.div`
+//     color: #666666;
+//     margin-top: 5px;
+// `;
 
 const TextAreaContainer = styled.div`
     background-color: #ffffff;
@@ -136,126 +137,44 @@ const ArrowIcon = styled(FiArrowRight)`
 `;
 
 const WritePostPage = () => {
-    const { lectureId } = useParams(); // URL 파라미터에서 lectureId를 가져옵니다.
+    // const { lectureId } = useParams();
+    // const [lecture, setLecture] = useState(null);
     const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [lecture, setLecture] = useState(null); // 강의 정보를 저장할 상태
-    const [userId, setUserId] = useState(null); // 사용자 ID를 저장할 상태
+    const [field, setField] = useState('');
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchLecture = async () => {
-            try {
-                console.log(`Fetching lecture with ID: ${lectureId}`);
-                const response = await fetch(`/api/lectures/${lectureId}`);
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.indexOf('application/json') !== -1) {
-                    const data = await response.json();
-                    console.log('Fetched lecture data:', data);
-                    setLecture(data);
-                } else {
-                    throw new Error('Response is not JSON');
-                }
-            } catch (error) {
-                console.error('Error fetching lecture:', error);
-            }
+
+    // "모집글 등록하기" 버튼 클릭 시 호출되는 함수
+    const handleSubmitClick = async (e) => {
+        e.preventDefault(); // 기본 폼 제출 이벤트 방지
+
+        const studyData = {
+            title,
+            field,
         };
 
-        const fetchUserId = async () => {
-            try {
-                const token = localStorage.getItem('jwtToken');
-                if (!token) {
-                    throw new Error('No JWT token found');
-                }
-
-                const response = await fetch('/api/auth/session-info', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                console.log('Response status (user ID):', response.status);
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        // JWT 토큰이 유효하지 않거나 만료된 경우 로그인 페이지로 리디렉션
-                        navigate('/login');
-                    }
-                    throw new Error('Network response was not ok');
-                }
-
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.indexOf('application/json') !== -1) {
-                    const data = await response.json();
-                    console.log('Fetched user data:', data);
-                    setUserId(data.userId);
-                } else {
-                    throw new Error('Response is not JSON');
-                }
-            } catch (error) {
-                console.error('Error fetching user ID:', error);
-                // navigate('/login'); // 에러 발생 시 로그인 페이지로 리디렉션
-            }
-        };
-
-        fetchLecture();
-        fetchUserId();
-    }, [lectureId, navigate]);
+        try {
+            await axiosInstance.post('/api/studies', studyData);
+            alert('스터디가 생성되었습니다!'); // 성공 메시지
+            navigate('/community');
+        } catch (error) {
+            console.error('스터디 생성 오류:', error);
+            alert('스터디 생성 중 오류가 발생했습니다.'); // 에러 메시지
+        }
+    };
 
     const handleTitleChange = (e) => {
         setTitle(e.target.value);
     };
 
-    const handleContentChange = (e) => {
-        setContent(e.target.value);
+    const handleFieldChange = (e) => {
+        setField(e.target.value);
     };
 
     const handleBackClick = () => {
         navigate(-1);
     };
 
-    const handleSubmitClick = () => {
-        if (!userId) {
-            console.error('No user ID found, unable to submit post');
-            return;
-        }
-
-        const postData = {
-            title,
-            field: content,
-            userId: userId,
-            lectureId: lectureId // 강의 ID를 포함
-        };
-
-        const token = localStorage.getItem('jwtToken'); // 로컬 스토리지에서 JWT 토큰 가져오기
-
-        fetch('/api/studies', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // 인증 헤더에 JWT 토큰 추가
-            },
-            body: JSON.stringify(postData),
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-    .then(data => {
-            console.log('Post created:', data);
-            navigate('/community'); // 모집글 작성 후 CommunityPage로 이동
-        })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-            });
-    };
 
     return (
         <Container>
@@ -265,19 +184,19 @@ const WritePostPage = () => {
                 </BackButton>
                 <Title>모집글 작성하기</Title>
             </Header>
-            {lecture && (
-                <PostContainer>
-                    <Post>
-                        <PostHeader>
-                            <Avatar />
-                            <PostContent>
-                                <PostTitle>{lecture.title}</PostTitle>
-                                <PostText>{lecture.description}</PostText>
-                            </PostContent>
-                        </PostHeader>
-                    </Post>
-                </PostContainer>
-            )}
+            {/*{lecture && (*/}
+            {/*    <PostContainer>*/}
+            {/*        <Post>*/}
+            {/*            <PostHeader>*/}
+            {/*                <Avatar />*/}
+            {/*                <PostContent>*/}
+            {/*                    <PostTitle>{lecture.title}</PostTitle>*/}
+            {/*                    <PostText>{lecture.description}</PostText>*/}
+            {/*                </PostContent>*/}
+            {/*            </PostHeader>*/}
+            {/*        </Post>*/}
+            {/*    </PostContainer>*/}
+            {/*)}*/}
             <TextAreaContainer>
                 <TitleInput
                     placeholder="제목을 작성하세요"
@@ -286,15 +205,16 @@ const WritePostPage = () => {
                 />
                 <TextArea
                     placeholder="내용을 작성하세요"
-                    value={content}
-                    onChange={handleContentChange}
+                    value={field}
+                    onChange={handleFieldChange}
                 />
-                <CharacterCount>*{250 - content.length} 글자 남음</CharacterCount>
+                <CharacterCount>*{250 - field.length} 글자 남음</CharacterCount>
             </TextAreaContainer>
             <SubmitButton onClick={handleSubmitClick}>
                 모집글 등록하기
                 <ArrowIcon />
             </SubmitButton>
+            <TabBar />
         </Container>
     );
 };

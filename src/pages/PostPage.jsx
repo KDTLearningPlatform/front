@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiSend, FiEdit, FiTrash2 } from 'react-icons/fi';
 import axiosInstance from '../api/axiosInstance';
 
+// 스타일드 컴포넌트 정의
 const Container = styled.div`
     padding: 20px;
     background-color: #F5F5F5;
@@ -30,26 +31,6 @@ const Title = styled.h1`
     margin-left: 10px;
 `;
 
-const PostContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-`;
-
-const Post = styled.div`
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 10px 0;
-    width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const PostHeader = styled.div`
-    display: flex;
-    align-items: center;
-`;
-
 const Avatar = styled.div`
     width: 40px;
     height: 40px;
@@ -58,23 +39,84 @@ const Avatar = styled.div`
     margin-right: 10px;
 `;
 
-const PostContent = styled.div`
-    display: flex;
-    flex-direction: column;
+const PostContainer = styled.div`
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px;
+    margin-bottom: 20px;
 `;
 
-const PostTitle = styled.div`
-    font-weight: bold;
-    color: #FF6347;
+const PostHeader = styled.div`
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
 `;
 
 const PostText = styled.div`
-    color: #666666;
-    margin-top: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+    padding: 6px;
+    white-space: nowrap; // 줄 바꿈 방지
+`;
+
+const PostTitle = styled.div`
+    font-size: 14px;
+    display: flex;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 6px;
+    width: 100%; // 너비를 100%로 설정하여 부모 요소의 가로 폭을 차지하도록 함
+    flex-grow: 1; // flex-grow를 사용하여 여유 공간을 모두 차지하도록 함
+    text-align: left; // 텍스트 정렬
+`;
+
+const PostContent = styled.div`
+    flex-grow: 1;
+`;
+
+const PostField = styled.div`
+    display: flex;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    padding: 16px;
+`;
+
+// 하트 아이콘에 대한 스타일드 컴포넌트
+const HeartIcon = styled.div`
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    margin-left: 10px; /* 오른쪽 끝으로 위치 조정 */
+    margin-right: 5px;
+    font-size: 24px; /* 아이콘 크기 설정 */
+    line-height: 1; /* 텍스트의 줄 높이 조정 */
+    display: flex; /* flexbox를 사용하여 정렬 */
+    justify-content: center; /* 가운데 정렬 */
+    align-items: center; /* 가운데 정렬 */
+    color: ${({ liked }) => (liked ? 'red' : '#666')}; /* 상태에 따라 색상 변경 */
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: red; /* 마우스 오버 시 색상 변경 */
+    }
 `;
 
 const CommentSection = styled.div`
     margin-top: 20px;
+`;
+
+const CommentHeader = styled.div`
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+    padding: 6px;
+    white-space: nowrap; // 줄 바꿈 방지
 `;
 
 const CommentContainer = styled.div`
@@ -153,46 +195,53 @@ const CommentSendButton = styled.button`
     color: #007BFF;
 `;
 
+// PostPage 컴포넌트 정의
 const PostPage = () => {
-    const { studyId } = useParams(); // URL에서 studyId를 추출
+    const {studyId} = useParams(); // URL에서 studyId를 추출
     const navigate = useNavigate(); // 페이지 이동을 위한 네비게이트 함수
     const [post, setPost] = useState({}); // 게시물 상태
     const [comments, setComments] = useState([]); // 댓글 목록 상태
     const [newComment, setNewComment] = useState(''); // 새 댓글 내용 상태
     const [parentCommentId, setParentCommentId] = useState(null); // 부모 댓글 ID 상태
-    const [editCommentId, setEditCommentId] = useState(null);
-    const [editCommentText, setEditCommentText] = useState('');
-
-    const userId = 1; // 사용자 ID를 하드코딩
+    const [editCommentId, setEditCommentId] = useState(null); // 수정할 댓글 ID 상태
+    const [editCommentText, setEditCommentText] = useState(''); // 수정할 댓글 내용 상태
 
     useEffect(() => {
-        fetchPost(studyId);
-        fetchComments(studyId);
+        fetchPost(studyId); // 게시물 데이터 가져오기
     }, [studyId]);
 
+    // 특정 ID의 게시물을 가져오는 함수 (댓글포함)
     const fetchPost = async (id) => {
         try {
             const response = await axiosInstance.get(`/api/studies/${id}`);
-            setPost(response.data);
+            setPost(response.data); // 게시물 상태 업데이트
+            setComments(response.data.comments || []); // 댓글 목록 상태 업데이트
         } catch (error) {
             console.error('Error fetching post:', error);
         }
     };
 
-    const fetchComments = async (id) => {
+    // 좋아요 버튼 클릭 시 호출되는 함수
+    const handleLikeClick = async (postId, event) => {
+        event.stopPropagation(); // 클릭 이벤트 전파 중지
         try {
-            const response = await axiosInstance.get(`/api/comments/study/${id}`);
-            console.log('Fetched comments:', response.data);
-            setComments(response.data);
+            const response = await axiosInstance.post(`/api/loves/${postId}`); // 좋아요 상태 토글 API 호출
+            if (response.status === 200) {
+                const updatedPost = {...post, liked: !post.liked}; // 좋아요 상태 토글
+                setPost(updatedPost); // 상태 업데이트
+            }
         } catch (error) {
-            console.error('Error fetching comments:', error);
+            console.error('Error toggling like:', error); // 에러 발생 시 콘솔에 로그
+            alert('좋아요 상태 변경 중 오류가 발생했습니다.'); // 사용자에게 오류 알림
         }
     };
 
+    // 새 댓글 입력 변화 시 호출되는 함수
     const handleNewCommentChange = (e) => {
-        setNewComment(e.target.value);
+        setNewComment(e.target.value); // 새 댓글 내용 상태 업데이트
     };
 
+    // 새 댓글 제출 시 호출되는 함수
     const handleCommentSubmit = async () => {
         if (newComment.trim() === '') {
             alert('댓글 내용을 입력하세요.');
@@ -200,127 +249,173 @@ const PostPage = () => {
         }
 
         try {
-            const response = await axiosInstance.post(`/api/comments`, {
+            const response = await axiosInstance.post(`/api/comments?studyId=${studyId}`, {
                 content: newComment,
-                userId: userId,
-                parentCommentId: parentCommentId,
-                studyId: studyId
+                parentCommentId: parentCommentId || null, // 부모 댓글 ID 추가
             });
-            await fetchComments(studyId);
-            setNewComment('');
-            setParentCommentId(null);
+
+            if (response.status === 201) {
+                await fetchPost(studyId); // 댓글 목록 새로고침
+                setNewComment('');
+                setParentCommentId(null);
+            }
         } catch (error) {
-            console.error('Error submitting comment:', error);
+            console.error('Error submitting comment:', error.response ? error.response.data : error.message);
             alert('댓글 작성 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
     };
 
+    // 댓글 수정 입력 변화 시 호출되는 함수
     const handleEditCommentChange = (e) => {
-        setEditCommentText(e.target.value);
+        setEditCommentText(e.target.value); // 수정할 댓글 내용 상태 업데이트
     };
 
+    // 댓글 수정 제출 시 호출되는 함수
     const handleEditCommentSubmit = async (commentId) => {
-        if (editCommentText.trim() === '') {
-            alert('댓글 내용을 입력하세요.');
+        if (editCommentText.trim() === '') { // 수정할 댓글 내용이 비어 있는지 확인
+            alert('댓글 내용을 입력하세요.'); // 비어있으면 알림
             return;
         }
 
         try {
             await axiosInstance.put(`/api/comments/${commentId}`, {
                 content: editCommentText,
-                userId: userId
             });
-            await fetchComments(studyId);
-            setEditCommentId(null);
-            setEditCommentText('');
+            setEditCommentId(null); // 수정할 댓글 ID 초기화
+            setEditCommentText(''); // 수정할 댓글 내용 초기화
+            await fetchPost(studyId);
         } catch (error) {
             console.error('Error updating comment:', error);
-            alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+            alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해주세요.'); // 오류 발생 시 알림
         }
     };
 
+    // 댓글 삭제 시 호출되는 함수
     const handleDeleteComment = async (commentId) => {
         try {
-            await axiosInstance.delete(`/api/comments/${commentId}`);
-            await fetchComments(studyId);
+            await axiosInstance.delete(`/api/comments/${commentId}`); // 댓글 삭제 API 호출
+            await fetchPost(studyId);
         } catch (error) {
             console.error('Error deleting comment:', error);
-            alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
+            alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.'); // 오류 발생 시 알림
         }
     };
 
-    const handleCommentClick = (commentId) => {
-        setParentCommentId(commentId);
+    // 댓글 클릭 시 호출되는 함수 (대댓글 작성 시 부모 ID 설정)
+    const handleReplyClick = (commentId) => {
+        setParentCommentId(commentId); // 부모 댓글 ID 설정
+        setNewComment(''); // 새 댓글 내용 초기화
     };
 
+    // 댓글 입력 필드에서 대댓글을 작성할 때, 부모 ID를 초기화하는 함수
+    const handleParentCommentCancel = () => {
+        setParentCommentId(null); // 부모 댓글 ID 초기화
+        setNewComment(''); // 입력 필드 초기화
+    };
+
+    // 댓글 수정 버튼 클릭 시 호출되는 함수
     const handleEditButtonClick = (commentId, commentText) => {
-        setEditCommentId(commentId);
-        setEditCommentText(commentText);
+        setEditCommentId(commentId); // 수정할 댓글 ID 설정
+        setEditCommentText(commentText); // 수정할 댓글 내용 설정
     };
 
-    const renderComments = (commentList, parentId = null, depth = 0) => {
-        return commentList
-            .filter(comment => comment.parentCommentId === parentId)
-            .map(comment => (
-                <CommentContainer key={`${comment.commentId}-${depth}`} depth={depth}>
-                    <Comment onClick={() => handleCommentClick(comment.commentId)}>
-                        <Avatar />
-                        <CommentContent>
-                            {editCommentId === comment.commentId ? (
-                                <>
-                                    <CommentInput
-                                        value={editCommentText}
-                                        onChange={handleEditCommentChange}
-                                    />
-                                    <CommentSendButton onClick={() => handleEditCommentSubmit(comment.commentId)}>
-                                        <FiSend />
-                                    </CommentSendButton>
-                                </>
-                            ) : (
-                                <>
-                                    <CommentText>{comment.content}</CommentText>
-                                    <CommentTime>{new Date(comment.createDate).toLocaleDateString()}</CommentTime>
-                                </>
-                            )}
-                        </CommentContent>
-                        {editCommentId !== comment.commentId && (
-                            <CommentActions>
-                                <EditButton onClick={() => handleEditButtonClick(comment.commentId, comment.content)}>
-                                    <FiEdit />
-                                </EditButton>
-                                <DeleteButton onClick={() => handleDeleteComment(comment.commentId)}>
-                                    <FiTrash2 />
-                                </DeleteButton>
-                            </CommentActions>
+    // 댓글을 트리 구조로 변환하는 함수
+    const buildCommentTree = (comments) => {
+        const commentMap = {};
+        const rootComments = [];
+
+        // 모든 댓글을 맵에 추가
+        comments.forEach(comment => {
+            commentMap[comment.commentId] = { ...comment, children: [] };
+        });
+
+        // 트리 구조 생성
+        comments.forEach(comment => {
+            if (comment.ancestorCommentId === comment.commentId) {
+                // 최상위 댓글
+                rootComments.push(commentMap[comment.commentId]);
+            } else {
+                // 자식 댓글
+                const parent = commentMap[comment.ancestorCommentId];
+                if (parent) {
+                    parent.children.push(commentMap[comment.commentId]);
+                }
+            }
+        });
+
+        return rootComments;
+    };
+
+    // 댓글 렌더링 함수 (재귀적으로 자식 댓글을 렌더링)
+    const renderComments = (commentList, depth = 0) => {
+        return commentList.map(comment => (
+            <CommentContainer key={comment.commentId} depth={depth}>
+                <Comment onClick={() => handleReplyClick(comment.commentId)}>
+                    <Avatar/>
+                    <CommentContent>
+                        {editCommentId === comment.commentId ? (
+                            <>
+                                <CommentInput
+                                    value={editCommentText}
+                                    onChange={handleEditCommentChange}
+                                />
+                                <CommentSendButton onClick={() => handleEditCommentSubmit(comment.commentId)}>
+                                    <FiSend/>
+                                </CommentSendButton>
+                            </>
+                        ) : (
+                            <>
+                                <CommentText>{comment.content}</CommentText>
+                                <CommentTime>{new Date(comment.createDate).toLocaleString()}</CommentTime>
+                            </>
                         )}
-                    </Comment>
-                    {renderComments(commentList, comment.commentId, depth + 1)}
-                </CommentContainer>
-            ));
+                    </CommentContent>
+                    {editCommentId !== comment.commentId && (
+                        <CommentActions>
+                            <EditButton onClick={() => handleEditButtonClick(comment.commentId, comment.content)}>
+                                <FiEdit/>
+                            </EditButton>
+                            <DeleteButton onClick={() => handleDeleteComment(comment.commentId)}>
+                                <FiTrash2/>
+                            </DeleteButton>
+                        </CommentActions>
+                    )}
+                </Comment>
+                {comment.children && comment.children.length > 0 && renderComments(comment.children, depth + 1)}
+            </CommentContainer>
+        ));
     };
 
+    // 댓글 목록 렌더링
     return (
         <Container>
             <Header>
                 <BackButton onClick={() => navigate(-1)}>
-                    <FiArrowLeft />
+                    <FiArrowLeft/>
                 </BackButton>
                 <Title>모집글 상세보기</Title>
             </Header>
+
             <PostContainer>
-                <Post>
-                    <PostHeader>
-                        <Avatar />
-                        <PostContent>
-                            <PostTitle>{post.title}</PostTitle>
-                            <PostText>{post.field}</PostText>
-                        </PostContent>
-                    </PostHeader>
-                </Post>
+                <PostHeader>
+                    <PostText>모집글</PostText>
+                    <PostTitle>{post.title}</PostTitle>
+                    <HeartIcon
+                        liked={post.liked}
+                        onClick={(event) => handleLikeClick(post.studyId, event)}
+                    >
+                        {post.liked ? '❤️' : '♡'}
+                    </HeartIcon>
+                </PostHeader>
+
+                <PostContent>
+                    <PostField>{post.field}</PostField>
+                </PostContent>
             </PostContainer>
+
             <CommentSection>
-                <h2>댓글</h2>
-                {comments.length > 0 ? renderComments(comments) : <p>댓글이 없습니다.</p>}
+                <CommentHeader>댓글</CommentHeader>
+                {comments.length > 0 ? renderComments(buildCommentTree(comments)) : <p>댓글이 없습니다.</p>}
             </CommentSection>
             <CommentInputContainer>
                 <Avatar />
@@ -332,6 +427,11 @@ const PostPage = () => {
                 <CommentSendButton onClick={handleCommentSubmit}>
                     <FiSend />
                 </CommentSendButton>
+                {parentCommentId && (
+                    <DeleteButton onClick={handleParentCommentCancel}>
+                        취소
+                    </DeleteButton>
+                )}
             </CommentInputContainer>
         </Container>
     );
