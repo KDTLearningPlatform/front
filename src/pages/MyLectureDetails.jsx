@@ -87,6 +87,7 @@ const LectureTime = styled.p`
 const LockIcon = styled.img`
   width: 24px;
   height: 24px;
+  cursor: not-allowed;
 `;
 
 const PlayIcon = styled.img`
@@ -142,13 +143,11 @@ const MyLectureDetails = () => {
   const [lectureDetails, setLectureDetails] = useState(null);
 
   useEffect(() => {
-    console.log("Received filter in MyLectureDetails:", location.state?.filter);
-    
     const fetchLectureDetails = async () => {
       try {
-        const response = await axiosInstance.get(`/api/lectures/details/${lectureId}`);
-        console.log('Lecture Details:', response.data.lectureDetails);
-        setLectureDetails(response.data.lectureDetails);
+        const response = await axiosInstance.get(`/api/lectures/my-details/${lectureId}`);
+        console.log('Lecture Details:', response.data);
+        setLectureDetails(response.data);
       } catch (error) {
         console.error('Error fetching lecture details:', error);
       }
@@ -173,11 +172,14 @@ const MyLectureDetails = () => {
     navigate(`/video/${video.videoId}`);
   };
 
+  // 완료된 비디오 수를 계산
+  const completedVideosCount = lectureDetails.videos.filter(video => video.progress === 1).length;
+
   return (
     <Container>
       <Header>
         <BackButton src={backIcon} alt="뒤로가기" onClick={handleBackClick} />
-        <Title>{lectureDetails.title}</Title>
+        <Title>{lectureDetails.lectureTitle}</Title>
       </Header>
       <LectureList>
         {lectureDetails.videos.map((video, index) => (
@@ -187,14 +189,20 @@ const MyLectureDetails = () => {
               <LectureTitle>{video.title}</LectureTitle>
               <LectureTime>{formatTime(video.runningTime)}</LectureTime>
             </LectureDetails>
-            {video.isLocked ? (
-              <LockIcon src={lockIcon} alt="잠금 아이콘" />
-            ) : (
-                <PlayIcon
+            {index < completedVideosCount ? (
+              <PlayIcon
                 src={playIcon}
                 alt="재생 아이콘"
                 onClick={() => handlePlayClick(video)}
-                />
+              />
+            ) : index === completedVideosCount ? (
+              <PlayIcon
+                src={playIcon}
+                alt="재생 아이콘"
+                onClick={() => handlePlayClick(video)}
+              />
+            ) : (
+              <LockIcon src={lockIcon} alt="잠금 아이콘" />
             )}
           </LectureItem>
         ))}
