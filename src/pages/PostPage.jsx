@@ -254,7 +254,8 @@ const PostPage = () => {
         }
     };
 
-    const handleEditPost = () => {
+    const handleEditPost = (postId, event) => {
+        event.stopPropagation(); // 클릭 이벤트 전파 중지
         setIsEditingPost(true); // 수정 모드 활성화
     };
 
@@ -276,7 +277,8 @@ const PostPage = () => {
         }
     };
 
-    const deletePost= async () => {
+    const deletePost= async (postId, event) => {
+        event.stopPropagation(); // 클릭 이벤트 전파 중지
         try {
             const response = await axiosInstance.delete(`/api/studies/${studyId}`);
             if (response.status === 204) {
@@ -360,13 +362,14 @@ const PostPage = () => {
     };
 
     // 댓글 삭제 시 호출되는 함수
-    const handleDeleteComment = async (commentId) => {
+    const handleDeleteComment = async (e, commentId) => {
+        e.stopPropagation(); // 이벤트 전파 중지
         try {
-            await axiosInstance.delete(`/api/comments/${commentId}`); // 댓글 삭제 API 호출
+            await axiosInstance.delete(`/api/comments/${commentId}`);
             await fetchPost(studyId);
         } catch (error) {
             console.error('Error deleting comment:', error);
-            alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.'); // 오류 발생 시 알림
+            alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
     };
 
@@ -384,9 +387,10 @@ const PostPage = () => {
     };
 
     // 댓글 수정 버튼 클릭 시 호출되는 함수
-    const handleEditButtonClick = (commentId, commentText) => {
-        setEditCommentId(commentId); // 수정할 댓글 ID 설정
-        setEditCommentText(commentText); // 수정할 댓글 내용 설정
+    const handleEditButtonClick = (e, commentId, commentText) => {
+        e.stopPropagation(); // 이벤트 전파 중지
+        setEditCommentId(commentId);
+        setEditCommentText(commentText);
     };
 
     // 댓글을 트리 구조로 변환하는 함수
@@ -419,11 +423,18 @@ const PostPage = () => {
         return rootComments;
     };
 
-    // 댓글 렌더링 함수 (재귀적으로 자식 댓글을 렌더링)
+    // renderComments 함수 내부의 Comment 컴포넌트 렌더링 부분을 다음과 같이 수정합니다.
     const renderComments = (commentList) => {
         return commentList.map(comment => (
             <CommentContainer key={comment.commentId} depth={comment.depth}>
-                <Comment onClick={() => handleReplyClick(comment.commentId)}>
+                <Comment onClick={(e) => {
+                    // 수정 모드일 때는 클릭 이벤트를 무시
+                    if (editCommentId === comment.commentId) {
+                        e.stopPropagation();
+                        return;
+                    }
+                    handleReplyClick(comment.commentId);
+                }}>
                     <Avatar/>
                     <CommentContent>
                         {editCommentId === comment.commentId ? (
@@ -431,8 +442,12 @@ const PostPage = () => {
                                 <CommentInput
                                     value={editCommentText}
                                     onChange={handleEditCommentChange}
+                                    onClick={(e) => e.stopPropagation()} // 입력 필드 클릭 시 이벤트 전파 중지
                                 />
-                                <CommentSendButton onClick={() => handleEditCommentSubmit(comment.commentId)}>
+                                <CommentSendButton onClick={(e) => {
+                                    e.stopPropagation(); // 이벤트 전파 중지
+                                    handleEditCommentSubmit(comment.commentId);
+                                }}>
                                     <FiSend/>
                                 </CommentSendButton>
                             </>
@@ -445,10 +460,10 @@ const PostPage = () => {
                     </CommentContent>
                     {editCommentId !== comment.commentId && (
                         <CommentActions>
-                            <EditButton onClick={() => handleEditButtonClick(comment.commentId, comment.content)}>
+                            <EditButton onClick={(e) => handleEditButtonClick(e, comment.commentId, comment.content)}>
                                 <FiEdit/>
                             </EditButton>
-                            <DeleteButton onClick={() => handleDeleteComment(comment.commentId)}>
+                            <DeleteButton onClick={(e) => handleDeleteComment(e, comment.commentId)}>
                                 <FiTrash2/>
                             </DeleteButton>
                         </CommentActions>
@@ -474,9 +489,9 @@ const PostPage = () => {
                     {post && currentUserId === post.userId && (
                         <ButtonContainer>
                             {isEditingPost ? (
-                                <ActionButton onClick={handleSavePost}>수정완료</ActionButton>
+                                <ActionButton onClick={(event) => handleSavePost(post.studyId, event)}>수정완료</ActionButton>
                             ) : (
-                                <ActionButton onClick={handleEditPost}>수정</ActionButton>
+                                <ActionButton onClick={(event) => handleEditPost(post.studyId, event)}>수정</ActionButton>
                             )}
                             <ActionButton onClick={deletePost}>삭제</ActionButton>
                         </ButtonContainer>
