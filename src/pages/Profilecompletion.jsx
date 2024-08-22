@@ -171,7 +171,7 @@ const Profilecompletion = () => {
       <Input type="text" placeholder="닉네임" value={formData.nickname} name="nickname" onChange={handleChange} />
       <EmailInput type="email" placeholder="이메일" value={formData.email} name="email" readOnly />
       <Select name="goalVidCnt" value={formData.goalVidCnt} onChange={handleChange}>
-        <option value="">하루 목표 강의 수</option>
+        <option value="">하루 목표 비디오 수</option>
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>

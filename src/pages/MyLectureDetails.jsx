@@ -6,6 +6,7 @@ import TabBar from '../components/TabBar/TabBar';
 import backIcon from '../assets/icons/back.svg';
 import lockIcon from '../assets/icons/lock.svg';
 import playIcon from '../assets/icons/play.svg';
+import LectureCompleteModal from './LectureCompleteModal'; 
 
 const Container = styled.div`
   padding: 16px;
@@ -141,6 +142,7 @@ const MyLectureDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [lectureDetails, setLectureDetails] = useState(null);
+  const [showLectureCompleteModal, setShowLectureCompleteModal] = useState(false);
 
   useEffect(() => {
     const fetchLectureDetails = async () => {
@@ -148,6 +150,10 @@ const MyLectureDetails = () => {
         const response = await axiosInstance.get(`/api/lectures/my-details/${lectureId}`);
         console.log('Lecture Details:', response.data);
         setLectureDetails(response.data);
+         // VideoPage에서 전달된 강의 완료 상태 확인
+         if (location.state?.isLectureComplete) {
+          setShowLectureCompleteModal(true);
+        }
       } catch (error) {
         console.error('Error fetching lecture details:', error);
       }
@@ -155,6 +161,11 @@ const MyLectureDetails = () => {
 
     fetchLectureDetails();
   }, [lectureId]);
+
+  const handleModalConfirm = () => {
+    setShowLectureCompleteModal(false);
+    navigate('/my-courses', { state: { filter: 'completed' } });
+  };
 
   if (!lectureDetails) {
     return <Container>Loading...</Container>;
@@ -189,7 +200,7 @@ const MyLectureDetails = () => {
   };
 
   const handlePlayClick = (video) => {
-    navigate(`/video/${video.videoId}`);
+    navigate(`/video/${video.videoId}`, { state: { lectureId: lectureId } });
   };
 
   const completedVideosCount = lectureDetails.videos.filter(video => video.progress === 1).length;
@@ -200,6 +211,7 @@ const MyLectureDetails = () => {
         <BackButton src={backIcon} alt="뒤로가기" onClick={handleBackClick} />
         <Title>{lectureDetails.lectureTitle}</Title>
       </Header>
+      {showLectureCompleteModal && <LectureCompleteModal onConfirm={handleModalConfirm} />}
       <LectureList>
         {lectureDetails.videos.map((video, index) => (
           <LectureItem key={index}>
