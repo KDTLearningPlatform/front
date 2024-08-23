@@ -220,7 +220,9 @@ const MyLectureDetails = () => {
               <LectureTitle>{video.title}</LectureTitle>
               <LectureTime>{formatTime(video.runningTime)}</LectureTime>
             </LectureDetails>
-            {index < completedVideosCount ? (
+            {lectureDetails.lectureProgress === 1.0 ? (
+              null // 강의가 완료된 경우, 아이콘을 아예 렌더링하지 않음
+            ) : index < completedVideosCount ? (
               <PlayIcon
                 src={playIcon}
                 alt="재생 아이콘"
