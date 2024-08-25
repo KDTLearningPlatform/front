@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
 import backIcon from '../assets/icons/back.svg';
@@ -51,12 +51,14 @@ const VideoPlayer = styled.video`
 const VideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [videoTitle, setVideoTitle] = useState('');
   const [videoContent, setVideoContent] = useState('');
   const videoRef = useRef(null);
   const [lastPlaybackPosition, setLastPlaybackPosition] = useState(0);
   const [runningTime, setRunningTime] = useState(0); // 비디오 전체 길이 추가
   const [progressSaved, setProgressSaved] = useState(false);
+  const lectureId = location.state?.lectureId;
 
   useEffect(() => {
     const fetchVideoContent = async () => {
@@ -118,8 +120,22 @@ const VideoPage = () => {
     }
   };
 
-  const handleBackClick = () => {
-    navigate(-1, { replace: true });
+  const checkLectureComplete = async () => {
+    if (lectureId) {
+      try {
+        const response = await axiosInstance.get(`/api/lectureProgress/check-complete/${lectureId}`);
+        return response.data;
+      } catch (error) {
+        console.error('Error checking lecture completion:', error);
+        return false;
+      }
+    }
+    return false;
+  };
+
+  const handleBackClick = async () => {
+    const isLectureComplete = await checkLectureComplete();
+    navigate('/mylectureDetails/' + lectureId, { state: { isLectureComplete } });
   };
 
   useEffect(() => {

@@ -55,15 +55,21 @@ const Input = styled.input`
   box-sizing: border-box;
 `;
 
-const EmailInput = styled(Input)`
-  background-color: #f0f0f0;
-  color: #888;
-  cursor: not-allowed;
+const Text = styled.p`
+  width: 100%;
+  padding: 18px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  box-sizing: border-box;
+  color: #000;
+  background-color: #FFFFFF;
+  border-radius: 10px;
 `;
 
 const Select = styled.select`
   width: 100%;
   padding: 15px;
+  margin-top: 10px;
   margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 10px;
@@ -87,7 +93,7 @@ const SaveButton = styled.button`
   border-radius: 90px;
   cursor: pointer;
   box-sizing: border-box;
-  margin-top: 60px;
+  margin-top: 30px;
 
   &:hover {
     background-color: #074bbf;
@@ -120,19 +126,21 @@ const Profile = () => {
     nickname: '',
     goalVidCnt: '',
     profileImage: '',
+    point: 0,
   });
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await axiosInstance.get('/auth/editProfile');
-        const { email, name, nickname, goalVidCnt, profileImage } = response.data;
+        const { email, name, nickname, goalVidCnt, profileImage, point } = response.data;
         setFormData({
           email,
           name,
           nickname,
           goalVidCnt: goalVidCnt.toString(),
           profileImage,
+          point: point.toString(),
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -194,11 +202,12 @@ const Profile = () => {
       <ProfileImageWrapper>
         <ProfileImage src={formData.profileImage || DefaultProfileImage} alt="Profile" />
       </ProfileImageWrapper>
-      <Input type="text" placeholder="이름" value={formData.name} name="name" onChange={handleChange} readOnly />
+      <Text>이름: {formData.name}</Text> {/* 이름 텍스트 */}
       <Input type="text" placeholder="닉네임" value={formData.nickname} name="nickname" onChange={handleChange} />
-      <EmailInput type="email" placeholder="이메일" value={formData.email} name="email" readOnly />
+      <Text>이메일: {formData.email}</Text> {/* 이메일 텍스트 */}
+      <Text>포인트: {formData.point}</Text> {/* 포인트 텍스트 */}
       <Select name="goalVidCnt" value={formData.goalVidCnt} onChange={handleChange}>
-        <option value="">하루 목표 강의 수</option>
+        <option value="">하루 목표 비디오 수</option>
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
