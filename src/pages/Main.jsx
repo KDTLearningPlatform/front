@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
 import TabBar from '../components/TabBar/TabBar';
+import { fcmGenerateAndSend } from '../firebase/handleFCMToken';
 
 const Container = styled.div`
   padding: 16px;
@@ -149,6 +150,7 @@ const Main = () => {
 
     fetchUserData();
     fetchLectures();
+    fcmGenerateAndSend();
   }, []);
 
   const handleProfileClick = () => {

@@ -2,7 +2,7 @@ import React from 'react';
 import googleLogo from '../assets/images/google.png';
 import naverLogo from '../assets/images/naver.png';
 import axiosInstance from '../api/axiosInstance';
-import { fcmGenerateAndSend } from '../firebase/handleFCMToken';
+// import { fcmGenerateAndSend } from '../firebase/handleFCMToken';
 
 const Login = () => {
   const styles = {
@@ -45,7 +45,7 @@ const Login = () => {
         params: { provider },
       });
       if (response.data && response.data.redirectUrl) {
-        await fcmGenerateAndSend();
+        // await fcmGenerateAndSend();
         window.location.href = `http://localhost:8080${response.data.redirectUrl}`;
       } else {
         console.error('No redirect URL found in the response');
