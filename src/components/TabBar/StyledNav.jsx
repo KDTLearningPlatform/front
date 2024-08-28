@@ -8,8 +8,10 @@ const StyledNav = styled.nav`
   padding: 10px 0; /* 상하 패딩을 추가합니다. */
   position: fixed; /* 고정 위치 설정 */
   bottom: 0; /* 하단에 위치하게 설정 */
+  left: 0;
   width: 100%; /* 전체 너비를 차지하도록 설정 */
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* 상단에 그림자 추가 */
+  z-index: 100;
 
   a {
     display: flex;
