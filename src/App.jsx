@@ -15,6 +15,8 @@ import EditLecture from './pages/EditLecture';
 import PostPage from "./pages/PostPage";
 import MyLectureDetails from './pages/MyLectureDetails';
 import Video from './pages/Video';
+import { registerServiceWorker } from './firebase/registerServiceWorker';
+import { requestNotificationPermission } from "./firebase/notificationPermission";
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -24,6 +26,8 @@ const App = () => {
       setShowSplash(false);
     }, 1500);
 
+    registerServiceWorker();
+    requestNotificationPermission().then(r => console.log(r));
     return () => clearTimeout(timer);
   }, []);
 
