@@ -8,14 +8,15 @@ const TabBar = () => {
 
   return (
     <StyledNav>
-      {navList.map((v, i) => (
+      {navList.map((item) => (
         <Link
-          to={v.path}
-          key={i}
-          className={pathname === v.path ? 'current' : ''}
+          to={item.path}
+          key={item.path}
+          className={pathname === item.path ? 'current' : ''}
+          aria-current={pathname === item.path ? 'page' : undefined}
         >
-          {v.img}
-          <span>{v.name}</span>
+          {item.img}
+          <span>{item.name}</span>
         </Link>
       ))}
     </StyledNav>

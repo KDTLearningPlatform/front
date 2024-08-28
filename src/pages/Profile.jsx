@@ -25,9 +25,10 @@ const Header = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   margin-left: 10px;
+  margin-top: 30px;
 `;
 
 const ProfileImageWrapper = styled.div`
@@ -101,20 +102,21 @@ const SaveButton = styled.button`
 `;
 
 const LogoutButton = styled.button`
-  width: calc(100% - 10px);
-  padding: 15px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
   border: none;
-  background-color: #0961F5;
-  color: white;
-  font-size: 16px;
+  background-color: #E1E7F5;
+  color: black;
+  font-size: 14px;
   font-weight: bold;
-  border-radius: 90px;
-  cursor: pointer;
-  box-sizing: border-box;
   margin-top: 30px;
+  border-radius: 50px;
+  cursor: pointer;
 
   &:hover {
-    background-color: #074bbf;
+    background-color: #cbd5e0;
   }
 `;
 
@@ -198,6 +200,7 @@ const Profile = () => {
     <Container>
       <Header>
         <Title>프로필</Title>
+        <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
       </Header>
       <ProfileImageWrapper>
         <ProfileImage src={formData.profileImage || DefaultProfileImage} alt="Profile" />
@@ -213,7 +216,6 @@ const Profile = () => {
         <option value="3">3</option>
       </Select>
       <SaveButton onClick={handleSubmit}>저장</SaveButton>
-      <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
       <ToastContainer />
       <TabBar />
     </Container>

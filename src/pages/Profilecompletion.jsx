@@ -92,6 +92,7 @@ const CompleteButton = styled.button`
   box-sizing: border-box;
   margin-top: auto;
   margin-bottom: 20px;
+  border: none;
 
   &:hover {
     background-color: #074bbf;
