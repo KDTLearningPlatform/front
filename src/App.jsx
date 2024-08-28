@@ -15,6 +15,7 @@ import EditLecture from './pages/EditLecture';
 import PostPage from "./pages/PostPage";
 import MyLectureDetails from './pages/MyLectureDetails';
 import Video from './pages/Video';
+import Ranking from './pages/Ranking';
 import { registerServiceWorker } from './firebase/registerServiceWorker';
 import { requestNotificationPermission } from "./firebase/notificationPermission";
 
@@ -53,6 +54,7 @@ const App = () => {
           <Route path="/lectureDetails/:lectureId" element={<LectureDetails />} />
           <Route path="/mylectureDetails/:lectureId" element={<MyLectureDetails />} />
           <Route path="/video/:videoId" element={<Video />} />
+          <Route path="/ranking" element={<Ranking />} />
           <Route path="*" element={<Navigate to="/" />} />
           <Route path="/post/:studyId" element={<PostPage />} />
         </Routes>
