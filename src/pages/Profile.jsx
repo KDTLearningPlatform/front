@@ -6,6 +6,7 @@ import DefaultProfileImage from '../assets/images/Profile.png'; // 기본 프로
 import TabBar from '../components/TabBar/TabBar'; // TabBar 추가
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { fcmDeleteToken } from '../firebase/handleFCMToken';
 
 const Container = styled.div`
   display: flex;
@@ -185,6 +186,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
+      await fcmDeleteToken(); // FCM 토큰 삭제가 완료된 후 로그인 페이지로 리디렉션
       const response = await axiosInstance.post('/auth/logout');
       if (response.data.status === 'redirect') {
         navigate('/login');
