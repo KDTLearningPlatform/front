@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
 import TabBar from '../components/TabBar/TabBar';
+import ChatBot from '../components/ChatBot/ChatBot';
 
 const Container = styled.div`
   padding: 16px;
@@ -10,6 +11,7 @@ const Container = styled.div`
   height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 `;
 
 const Header = styled.div`
@@ -123,83 +125,95 @@ const LectureCount = styled.p`
 `;
 
 const Main = () => {
-  const navigate = useNavigate();
-  const [userData, setUserData] = useState({});
-  const [lectures, setLectures] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
+    const [userData, setUserData] = useState({});
+    const [lectures, setLectures] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axiosInstance.get('/auth/main');
-        setUserData(response.data);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance.get('/auth/main');
+                setUserData(response.data);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        const fetchLectures = async () => {
+            try {
+                const response = await axiosInstance.get('/api/lectures');
+                setLectures(response.data);
+            } catch (error) {
+                console.error('Error fetching lectures:', error);
+            }
+        };
+
+        fetchUserData();
+        fetchLectures();
+    }, []);
+
+    const handleProfileClick = () => {
+        navigate('/editProfile');
     };
 
-    const fetchLectures = async () => {
-      try {
-        const response = await axiosInstance.get('/api/lectures');
-        setLectures(response.data);
-      } catch (error) {
-        console.error('Error fetching lectures:', error);
-      }
+    const handleCreateLecture = () => {
+        navigate('/createLecture');
     };
 
-    fetchUserData();
-    fetchLectures();
-  }, []);
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
 
-  const handleProfileClick = () => {
-    navigate('/editProfile');
-  };
+    const handleLectureClick = (lectureId) => {
+        navigate(`/lectureDetails/${lectureId}`);
+    };
 
-  const handleCreateLecture = () => {
-    navigate('/createLecture');
-  };
+    const filteredLectures = lectures.filter(
+        (lecture) =>
+            lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            lecture.tag.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
+    return (
+        <Container>
+            <Header>
+                <WelcomeText>안녕하세요, {userData.name}님</WelcomeText>
+                <SubText>오늘은 무엇을 학습하고 싶으세요?</SubText>
+                <SearchBar
+                    placeholder="검색할 내용을 입력하세요"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                />
+            </Header>
+            <LectureHeader>
+                <LectureTitle>강의 목록</LectureTitle>
+                <CreateLectureButton onClick={handleCreateLecture}>
+                    강의 생성
+                </CreateLectureButton>
+            </LectureHeader>
+            <LectureContainer>
+                {filteredLectures.map((lecture) => (
+                    <LectureItem
+                        key={lecture.lectureId}
+                        onClick={() => handleLectureClick(lecture.lectureId)}
+                    >
+                        <LectureImage />
+                        <LectureDetails>
+                            <LectureTag>{lecture.tag}</LectureTag>
+                            <LectureItemTitle>{lecture.title}</LectureItemTitle>
+                            <LectureCount>{lecture.totalVideoCount} 비디오</LectureCount>
+                            <LectureCount>{lecture.attendanceCount} 수강생</LectureCount>
+                        </LectureDetails>
+                    </LectureItem>
+                ))}
+            </LectureContainer>
 
-  const handleLectureClick = (lectureId) => {
-    navigate(`/lectureDetails/${lectureId}`);
-  };
+            <ChatBot />
 
-  const filteredLectures = lectures.filter(
-    (lecture) =>
-      lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lecture.tag.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <Container>
-      <Header>
-        <WelcomeText>안녕하세요, {userData.name}님</WelcomeText>
-        <SubText>오늘은 무엇을 학습하고 싶으세요?</SubText>
-        <SearchBar placeholder="검색할 내용을 입력하세요" value={searchTerm} onChange={handleSearchChange} />
-      </Header>
-      <LectureHeader>
-        <LectureTitle>강의 목록</LectureTitle>
-        <CreateLectureButton onClick={handleCreateLecture}>강의 생성</CreateLectureButton>
-      </LectureHeader>
-      <LectureContainer>
-        {filteredLectures.map((lecture) => (
-          <LectureItem key={lecture.lectureId} onClick={() => handleLectureClick(lecture.lectureId)}>
-            <LectureImage />
-            <LectureDetails>
-              <LectureTag>{lecture.tag}</LectureTag>
-              <LectureItemTitle>{lecture.title}</LectureItemTitle>
-              <LectureCount>{lecture.totalVideoCount} 비디오</LectureCount>
-              <LectureCount>{lecture.attendanceCount} 수강생</LectureCount>
-            </LectureDetails>
-          </LectureItem>
-        ))}
-      </LectureContainer>
-      <TabBar onProfileClick={handleProfileClick} />
-    </Container>
-  );
+            <TabBar onProfileClick={handleProfileClick} />
+        </Container>
+    );
 };
 
 export default Main;
