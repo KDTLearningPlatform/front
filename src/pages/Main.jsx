@@ -4,6 +4,7 @@ import axiosInstance from '../api/axiosInstance';
 import styled from 'styled-components';
 import TabBar from '../components/TabBar/TabBar';
 import ChatBot from '../components/ChatBot/ChatBot';
+import { fcmGenerateAndSend } from '../firebase/handleFCMToken';
 
 const Container = styled.div`
   padding: 16px;
@@ -149,9 +150,10 @@ const Main = () => {
             }
         };
 
-        fetchUserData();
-        fetchLectures();
-    }, []);
+    fetchUserData();
+    fetchLectures();
+    fcmGenerateAndSend();
+  }, []);
 
     const handleProfileClick = () => {
         navigate('/editProfile');

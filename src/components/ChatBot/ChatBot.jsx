@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import axiosInstance from '../../api/axiosInstance';
 import { FaRobot, FaPaperPlane, FaUser } from 'react-icons/fa';
 
 const ChatBotIcon = styled.div`
@@ -101,18 +102,19 @@ const ChatBot = () => {
             const newMessage = { sender: 'user', text: chatInput };
             setMessages(prevMessages => [...prevMessages, newMessage]);
 
-            let responseData;
-            if (chatInput === "안녕하세요") {
-                responseData = "안녕하세요! 무엇을 도와드릴까요?";
-            } else if (chatInput === "정보처리기사 시험을 준비하려고 하는데 어떤 강의를 추천하세요?") {
-                responseData = "정보처리기사 필기(기본편)부터 학습하시는 것을 추천드립니다.";
-            } else if (chatInput === "정보처리기사 기본편을 이미 학습했다면 그 다음은 어떤 강의를 추천하시나요?") {
-                responseData = "정보처리기사 필기(심화편)을 학습하시면서 기출문제 풀이를 하실 것을 추천드립니다.";
-            } else {
-                responseData = "죄송합니다, 이해하지 못했습니다.";
-            }
+            try {
+                const response = await axiosInstance.get('/api/chat/message', {
+                    params: {
+                        prompt: chatInput
+                    }
+                });
+                const botResponse = response.data;
 
-            await typeMessage(responseData);
+                await typeMessage(botResponse);
+            } catch (error) {
+                console.error('Error sending message:', error.response ? error.response.data : error.message);
+                await typeMessage('죄송합니다, 서버와 통신 중 오류가 발생했습니다.');
+            }
 
             setChatInput('');
         }
@@ -173,6 +175,7 @@ const ChatBot = () => {
                         placeholder="무엇을 도와드릴까요?"
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     />
                     <SendButton onClick={handleSendMessage}>
                         <FaPaperPlane />

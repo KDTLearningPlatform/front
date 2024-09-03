@@ -6,6 +6,7 @@ import DefaultProfileImage from '../assets/images/Profile.png'; // 기본 프로
 import TabBar from '../components/TabBar/TabBar'; // TabBar 추가
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { fcmDeleteToken } from '../firebase/handleFCMToken';
 
 const Container = styled.div`
   display: flex;
@@ -25,9 +26,10 @@ const Header = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   margin-left: 10px;
+  margin-top: 30px;
 `;
 
 const ProfileImageWrapper = styled.div`
@@ -101,20 +103,21 @@ const SaveButton = styled.button`
 `;
 
 const LogoutButton = styled.button`
-  width: calc(100% - 10px);
-  padding: 15px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
   border: none;
-  background-color: #0961F5;
-  color: white;
-  font-size: 16px;
+  background-color: #E1E7F5;
+  color: black;
+  font-size: 14px;
   font-weight: bold;
-  border-radius: 90px;
-  cursor: pointer;
-  box-sizing: border-box;
   margin-top: 30px;
+  border-radius: 50px;
+  cursor: pointer;
 
   &:hover {
-    background-color: #074bbf;
+    background-color: #cbd5e0;
   }
 `;
 
@@ -183,6 +186,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
+      await fcmDeleteToken(); // FCM 토큰 삭제가 완료된 후 로그인 페이지로 리디렉션
       const response = await axiosInstance.post('/auth/logout');
       if (response.data.status === 'redirect') {
         navigate('/login');
@@ -198,6 +202,7 @@ const Profile = () => {
     <Container>
       <Header>
         <Title>프로필</Title>
+        <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
       </Header>
       <ProfileImageWrapper>
         <ProfileImage src={formData.profileImage || DefaultProfileImage} alt="Profile" />
@@ -213,7 +218,6 @@ const Profile = () => {
         <option value="3">3</option>
       </Select>
       <SaveButton onClick={handleSubmit}>저장</SaveButton>
-      <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
       <ToastContainer />
       <TabBar />
     </Container>
